@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>{{ brand }} | Investment Marketplace</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+{% if session.get('user_id') %}
+<header class="top"><a class="brand" href="{{ url_for('home') }}"><span class="mark">B</span> BitForge</a><a href="{{ url_for('market') }}">Market</a><a href="{{ url_for('account') }}">Account</a></header>
+{% else %}<header class="authbrand"><span class="mark">B</span><span>BitForge</span></header>{% endif %}
+<main class="wrap">
+{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category,message in messages %}<div class="notice {{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+{% block content %}{% endblock %}
+</main>
+{% if session.get('user_id') %}<nav class="bottom"><a href="{{ url_for('home') }}">⌂<small>Home</small></a><a href="{{ url_for('market') }}">⌕<small>Market</small></a><a href="{{ url_for('orders') }}">▤<small>Orders</small></a><a href="{{ url_for('account') }}">♙<small>Account</small></a></nav>{% endif %}
+</body></html>

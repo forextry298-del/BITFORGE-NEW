@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block content %}<h1 class="page-title">My orders</h1>{% for r in rows %}<div class="rowcard"><b>{{ r['name'] or 'Project' }}</b><span>UGX {{ "{:,}".format(r['amount']) }}</span><small>{{ r['status'] }} · {{ r['created_at'] }}</small></div>{% else %}<div class="empty">No investment requests yet.</div>{% endfor %}{% endblock %}
