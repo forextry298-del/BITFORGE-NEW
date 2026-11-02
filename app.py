@@ -33,6 +33,8 @@ def init_db():
             product_id INTEGER NOT NULL, amount INTEGER NOT NULL,
             status TEXT NOT NULL DEFAULT 'Submitted', created_at TEXT NOT NULL)""")
 
+init_db()
+
 @app.context_processor
 def inject_globals():
     return {"brand": "BitForge", "year": datetime.now().year}
