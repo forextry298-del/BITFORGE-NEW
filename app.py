@@ -74,6 +74,15 @@ def init_db():
             balance REAL NOT NULL DEFAULT 0,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""")
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(users)")}
+        if "country" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN country TEXT NOT NULL DEFAULT 'Uganda'")
+        if "balance" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN balance REAL NOT NULL DEFAULT 0")
+        if "created_at" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN created_at TEXT")
+            conn.execute("UPDATE users SET created_at=CURRENT_TIMESTAMP WHERE created_at IS NULL")
+
         conn.execute("""CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -120,13 +129,17 @@ def register():
                 if existing:
                     flash("That phone number is already registered. Please sign in.")
                     return render_template("register.html")
-                db().execute("INSERT INTO users(full_name, phone, password_hash) VALUES(?,?,?)",
-                             (name, phone, generate_password_hash(password)))
+                db().execute(
+                    "INSERT INTO users(full_name, country, phone, password_hash, created_at) VALUES(?,?,?,?,CURRENT_TIMESTAMP)",
+                    (name, request.form.get("country", "Uganda").strip(), phone, generate_password_hash(password))
+                )
                 db().commit()
                 flash("Registration successful. Please sign in.")
                 return redirect(url_for("login"))
-            except sqlite3.IntegrityError:
-                flash("That phone number is already registered. Please sign in.")
+            except sqlite3.IntegrityError as error:
+                db().rollback()
+                print("[BITFORGE] Registration constraint error:", error, flush=True)
+                flash("Registration could not be completed. Please check your details.")
     return render_template("register.html")
 
 @app.route("/login", methods=["GET", "POST"])
