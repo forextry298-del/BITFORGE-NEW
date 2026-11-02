@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block content %}
+<div class="hello"><div><span class="eyebrow">BITFORGE INVESTMENT MARKETPLACE</span><h1>Hello, {{ user['full_name'].split(' ')[0] }}</h1><p class="muted">Your investment overview</p></div><div class="avatar">{{ user['full_name'][0]|upper }}</div></div>
+<section class="balance"><div class="muted light">Investment wallet · Demo display</div><div class="amount">UGX 0</div><p class="light small">Available balance is not connected to live payments</p><div class="actions"><a class="whitebtn" href="{{ url_for('deposit') }}">↓ Deposit</a><a class="outlinebtn" href="{{ url_for('withdraw') }}">↑ Withdraw</a></div></section>
+<div class="sectionhead"><h2>Investment products</h2><a href="{{ url_for('market') }}">See all →</a></div>
+<div class="products">
+{% for p in products %}<article class="product"><img src="{{ url_for('static', filename='images/' + p.image) }}"><div class="productbody"><span class="tag">{{ p.category }}</span><h3>{{ p.name }}</h3><p>{{ p.description }}</p><div class="meta">Minimum <b>UGX {{ "{:,}".format(p.minimum) }}</b></div><div class="meta">{{ p.duration }} · {{ p.risk }} risk</div><a class="primary linkbtn" href="{{ url_for('market') }}">View project</a></div></article>{% endfor %}
+</div>
+<div class="sectionhead"><h2>Quick access</h2></div><div class="quick"><a href="{{ url_for('deposit') }}">＋<b>Deposit</b></a><a href="{{ url_for('withdraw') }}">↗<b>Withdraw</b></a><a href="{{ url_for('orders') }}">▤<b>My orders</b></a><a href="{{ url_for('account') }}">♙<b>Account</b></a></div>
+<div class="disclaimer">Demo environment: no investment return is promised, no balance is credited, and payment requests are not processed.</div>
+{% endblock %}

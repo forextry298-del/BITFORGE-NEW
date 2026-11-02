@@ -1,0 +1,13 @@
+BITFORGE HOME PAGE UPDATE
+
+This patch updates:
+- templates/base.html
+- templates/home.html
+- static/style.css
+- adds three real photos in static/images/
+
+It includes a mobile-first marketplace layout, search, category tabs, image carousel that auto-advances every 4.5 seconds, UGX product amounts, wallet section, menu with profile/settings and dark mode, and fixed bottom navigation.
+
+The wallet display shows user.balance when available; otherwise UGX 0. It does not create or credit money.
+
+Back up your existing project before extracting this patch over it.
