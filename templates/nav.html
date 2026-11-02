@@ -1,0 +1,8 @@
+{% from "icons.html" import icon %}
+<nav class="bottom" aria-label="Main navigation">
+<a class="{% if request.endpoint=='home' %}active{% endif %}" href="{{url_for('home')}}">{{icon('home')}}<small>Home</small></a>
+<a class="{% if request.endpoint=='market' %}active{% endif %}" href="{{url_for('market')}}">{{icon('search')}}<small>Search</small></a>
+<a class="{% if request.endpoint=='wallet' %}active{% endif %}" href="{{url_for('wallet')}}">{{icon('wallet')}}<small>Wallet</small></a>
+<a class="{% if request.endpoint=='orders' %}active{% endif %}" href="{{url_for('orders')}}">{{icon('orders')}}<small>Orders</small></a>
+<a class="{% if request.endpoint=='account' %}active{% endif %}" href="{{url_for('account')}}">{{icon('account')}}<small>Account</small></a>
+</nav>

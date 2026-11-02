@@ -1,1 +1,65 @@
-{% extends "base.html" %}{% block content %}<a class="back" href="{{ url_for('home') }}">← Back</a><h1 class="page-title">Deposit</h1><p class="muted">UGX · Mobile Money request</p><form method="post" class="panel formpanel"><label>Amount (UGX)</label><input type="number" name="amount" min="10000" step="1000" placeholder="Enter amount" required><p class="hint">Minimum deposit: UGX 10,000</p><label>Payment method</label><select name="method" required><option value="">Choose network</option><option>MTN Mobile Money</option><option>Airtel Money</option></select><label>Mobile money number</label><input name="phone" placeholder="07XXXXXXXX" required><button class="primary">Deposit request</button><p class="hint">This prototype only records a pending request. It does not move money.</p></form>{% endblock %}
+{% extends "base.html" %}
+{% from "icons.html" import icon %}
+{% block title %}Deposit · BitForge{% endblock %}
+{% block body %}
+<header class="deposit-header">
+  <a class="deposit-back" href="{{ url_for('wallet') }}" aria-label="Back">←</a>
+  <div><h1>Deposit</h1><div class="deposit-brand"><span class="deposit-brand-mark">B</span><strong>BitForge</strong><small>by</small></div></div>
+</header>
+<main class="deposit-page">
+  <form method="post" id="depositForm" class="deposit-form">
+    <section class="deposit-section">
+      <h2>Deposit Amount</h2>
+      <div class="amount-entry"><span class="currency-mark">UGX</span><input id="depositAmount" name="amount" type="number" inputmode="numeric" min="10000" step="1000" placeholder="0" required aria-label="Deposit Amount"><span class="currency-chip">UGX</span></div>
+      <p class="deposit-hint">Minimum deposit: UGX 10,000 <span>•</span> Instant deposit request</p>
+    </section>
+
+    <section class="deposit-section">
+      <h2>Payment Method</h2>
+      <label class="payment-option selected" data-method="MTN Mobile Money">
+        <input type="radio" name="method" value="MTN Mobile Money" checked required>
+        <span class="provider-logo mtn-logo">MTN</span>
+        <span class="provider-copy"><strong>MTN Mobile Money</strong><small>Fee: UGX 0 <i>•</i> Instant</small></span>
+        <span class="radio-visual" aria-hidden="true"></span>
+      </label>
+      <label class="payment-option" data-method="Airtel Money">
+        <input type="radio" name="method" value="Airtel Money" required>
+        <span class="provider-logo airtel-logo"><b>A</b></span>
+        <span class="provider-copy"><strong>Airtel Money</strong><small>Fee: UGX 0 <i>•</i> Instant</small></span>
+        <span class="radio-visual" aria-hidden="true"></span>
+      </label>
+    </section>
+
+    <section class="deposit-summary" aria-live="polite">
+      <div><span>Amount</span><strong id="summaryAmount">UGX 0</strong></div>
+      <div><span>Fee</span><strong>UGX 0</strong></div>
+      <div class="summary-total"><span>Total</span><strong id="summaryTotal">UGX 0</strong></div>
+    </section>
+    {% with messages=get_flashed_messages() %}{% for message in messages %}<div class="flash">{{ message }}</div>{% endfor %}{% endwith %}
+    <button class="deposit-submit" id="depositSubmit" type="submit">Deposit UGX 0</button>
+    <p class="deposit-terms">By continuing, you agree to our <a href="#terms">Terms</a> &amp; <a href="#privacy">Privacy Policy</a></p>
+    <p class="deposit-notice">Your request will be recorded as pending review. This demo does not collect or transfer Mobile Money.</p>
+  </form>
+</main>
+{% include "nav.html" %}
+<script>
+(() => {
+  const amount = document.getElementById('depositAmount');
+  const total = document.getElementById('summaryTotal');
+  const summary = document.getElementById('summaryAmount');
+  const button = document.getElementById('depositSubmit');
+  const format = value => 'UGX ' + Math.max(0, Math.floor(Number(value) || 0)).toLocaleString('en-UG');
+  function update(){ const value = Math.max(0, Number(amount.value) || 0); summary.textContent = format(value); total.textContent = format(value); button.textContent = 'Deposit ' + format(value); }
+  amount.addEventListener('input', update);
+  document.querySelectorAll('.payment-option input').forEach(radio => radio.addEventListener('change', () => {
+    document.querySelectorAll('.payment-option').forEach(card => card.classList.toggle('selected', card.querySelector('input').checked));
+  }));
+  document.getElementById('depositForm').addEventListener('submit', event => {
+    if (Number(amount.value) < 10000) { event.preventDefault(); amount.setCustomValidity('Minimum deposit is UGX 10,000'); amount.reportValidity(); }
+    else amount.setCustomValidity('');
+  });
+  amount.addEventListener('input', () => amount.setCustomValidity(''));
+  update();
+})();
+</script>
+{% endblock %}

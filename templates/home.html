@@ -1,21 +1,127 @@
-{% extends "base.html" %}{% block title %}BitForge Marketplace{% endblock %}{% block content %}
-<section class="search-wrap"><span>⌕</span><form action="{{ url_for('market') }}" method="get"><input name="q" type="search" placeholder="Search products..."></form></section>
-<section class="hero-slider">
- <article class="hero-slide active"><img src="{{ url_for('static',filename='images/office-building.jpg') }}" alt="Modern commercial office building"><div class="shade"></div><div class="hero-copy"><label>BITFORGE PROJECTS</label><h1>Build with confidence.</h1><p>Explore property and business opportunities.</p><a href="{{ url_for('market') }}">Explore projects →</a></div></article>
- <article class="hero-slide"><img src="{{ url_for('static',filename='images/solar-farm.jpg') }}" alt="Solar farm at sunset"><div class="shade"></div><div class="hero-copy"><label>CLEAN ENERGY</label><h1>Power a brighter future.</h1><p>Discover solar energy project opportunities.</p><a href="{{ url_for('market') }}">Explore projects →</a></div></article>
- <article class="hero-slide"><img src="{{ url_for('static',filename='images/wind-energy.jpg') }}" alt="Wind turbines and renewable energy facility"><div class="shade"></div><div class="hero-copy"><label>GREEN INVESTMENT</label><h1>Move towards tomorrow.</h1><p>Explore renewable energy and infrastructure.</p><a href="{{ url_for('market') }}">Explore projects →</a></div></article>
- <button class="prev" aria-label="Previous">‹</button><button class="next" aria-label="Next">›</button><div class="dots"><button class="selected"></button><button></button><button></button></div>
-</section>
-<section class="trust-row"><span>🛡️ <b>Secure requests</b></span><span>⚡ <b>Simple access</b></span><span>☏ <b>Support</b></span></section>
-<nav class="categories"><a class="selected" href="{{ url_for('market') }}">Explore All</a><a href="{{ url_for('market',q='solar') }}">Solar</a><a href="{{ url_for('market',q='real estate') }}">Real Estate</a><a href="{{ url_for('market',q='green energy') }}">Green Energy</a></nav>
-<div class="section-heading"><div><h2>Featured projects</h2><p>Explore available BitForge opportunities</p></div><a href="{{ url_for('market') }}">View all →</a></div>
-<section class="products">
-<article class="product"><img src="{{ url_for('static',filename='images/solar-farm.jpg') }}" alt="Solar farm"><div><span class="tag">Solar</span><h3>Solar Farm Plot</h3><p>Participation in a renewable-energy solar project.</p><small>Minimum amount</small><strong>UGX 25,000</strong><a href="{{ url_for('market') }}">View project</a></div></article>
-<article class="product"><img src="{{ url_for('static',filename='images/office-building.jpg') }}" alt="Commercial building"><div><span class="tag">Real Estate</span><h3>Commercial Real Estate Unit</h3><p>Fractional participation in a commercial property project.</p><small>Minimum amount</small><strong>UGX 50,000</strong><a href="{{ url_for('market') }}">View project</a></div></article>
-<article class="product"><img src="{{ url_for('static',filename='images/wind-energy.jpg') }}" alt="Wind energy facility"><div><span class="tag">Green Energy</span><h3>Green Energy Fund</h3><p>A diversified clean-energy project portfolio.</p><small>Minimum amount</small><strong>UGX 10,000</strong><a href="{{ url_for('market') }}">View project</a></div></article>
-</section>
-<section class="wallet"><small>INVESTMENT WALLET</small><p>Total Balance</p><h2>UGX {{ "{:,.0f}".format(user.balance|default(0)|float) }}</h2><div><a href="{{ url_for('deposit') }}">↓ Deposit</a><a href="{{ url_for('withdraw') }}">↑ Withdraw</a></div><small class="note">Requests remain pending until reviewed and approved.</small></section>
-<div class="section-heading"><div><h2>Quick access</h2><p>Manage your BitForge account</p></div></div><section class="quick"><a href="{{ url_for('deposit') }}">＋<small>Deposit</small></a><a href="{{ url_for('withdraw') }}">↗<small>Withdraw</small></a><a href="{{ url_for('orders') }}">▤<small>My orders</small></a><a href="{{ url_for('account') }}">♙<small>Account</small></a></section>
-{% endblock %}{% block scripts %}<script>
-(()=>{const s=[...document.querySelectorAll('.hero-slide')],d=[...document.querySelectorAll('.dots button')];let n=0,t;function show(x){n=(x+s.length)%s.length;s.forEach((v,i)=>v.classList.toggle('active',i===n));d.forEach((v,i)=>v.classList.toggle('selected',i===n))}function restart(){clearInterval(t);t=setInterval(()=>show(n+1),4500)}document.querySelector('.prev').onclick=()=>{show(n-1);restart()};document.querySelector('.next').onclick=()=>{show(n+1);restart()};d.forEach((v,i)=>v.onclick=()=>{show(i);restart()});restart()})();
-</script>{% endblock %}
+{% extends "base.html" %}
+{% block title %}BitForge Marketplace{% endblock %}
+{% from 'icons.html' import icon %}
+{% block body %}
+<header class="top home-top">
+  <a class="brand" href="{{ url_for('home') }}"><span class="logo">B</span><span>BitForge</span></a>
+  <button class="menu-button" id="menuButton" type="button" aria-label="Open menu"><span class="hamburger"><i></i><i></i><i></i></span></button>
+  <div class="menu-popover" id="menuPopover">
+    <div class="menu-label">MENU</div>
+    <a href="{{ url_for('account') }}">{{ icon("settings",19) }} <span>Profile &amp; Settings</span></a>
+    <button type="button" id="darkModeButton">{{ icon("sun",19) }} <span>Dark Mode</span></button>
+    <a href="{{ url_for('logout') }}">↪ <span>Sign out</span></a>
+  </div>
+</header>
+
+<main class="wrap content home-content">
+  <form class="search-bar" action="{{ url_for('market') }}" method="get">
+    <span class="search-icon">{{ icon("search",25) }}</span>
+    <input name="q" type="search" placeholder="Search projects..." aria-label="Search projects">
+    <button type="submit">Search</button>
+  </form>
+
+  <section class="hero-slider" aria-label="Featured BitForge projects">
+    <article class="hero-slide active">
+      <img src="{{ url_for('static',filename='images/real_estate.jpg') }}" alt="Modern commercial office building">
+      <div class="hero-overlay"></div>
+      <div class="hero-text"><span class="hero-kicker">BITFORGE PROJECTS</span><h1>Build with confidence.</h1><p>Explore property and infrastructure project opportunities.</p><a href="{{ url_for('market') }}">Explore projects <span>→</span></a></div>
+    </article>
+    <article class="hero-slide">
+      <img src="{{ url_for('static',filename='images/solar_farm.jpg') }}" alt="Solar farm in a sunny landscape">
+      <div class="hero-overlay"></div>
+      <div class="hero-text"><span class="hero-kicker">SOLAR ENERGY</span><h1>Power a brighter future.</h1><p>Discover clean-energy project information.</p><a href="{{ url_for('market',category='Solar') }}">Explore solar <span>→</span></a></div>
+    </article>
+    <article class="hero-slide">
+      <img src="{{ url_for('static',filename='images/green_energy.jpg') }}" alt="Wind turbines and renewable energy facility">
+      <div class="hero-overlay"></div>
+      <div class="hero-text"><span class="hero-kicker">GREEN INFRASTRUCTURE</span><h1>Move towards tomorrow.</h1><p>Browse renewable-energy project listings.</p><a href="{{ url_for('market',category='Green Energy') }}">Explore energy <span>→</span></a></div>
+    </article>
+    <button class="slider-arrow slider-prev" type="button" aria-label="Previous slide">‹</button>
+    <button class="slider-arrow slider-next" type="button" aria-label="Next slide">›</button>
+    <div class="slider-dots"><button class="current" type="button" aria-label="Slide 1"></button><button type="button" aria-label="Slide 2"></button><button type="button" aria-label="Slide 3"></button></div>
+  </section>
+
+  <section class="benefits">
+    <div><span class="benefit-icon">✓</span><span><b>Clear information</b><small>Project details</small></span></div>
+    <div><span class="benefit-icon">⌁</span><span><b>Easy requests</b><small>Simple account tools</small></span></div>
+    <div><span class="benefit-icon">▣</span><span><b>Account access</b><small>Anytime, anywhere</small></span></div>
+  </section>
+
+  <nav class="category-pills" aria-label="Project categories">
+    <a class="chosen" href="{{ url_for('market') }}">Explore All</a>
+    <a href="{{ url_for('market',category='Solar') }}">Solar</a>
+    <a href="{{ url_for('market',category='Real Estate') }}">Real Estate</a>
+    <a href="{{ url_for('market',category='Green Energy') }}">Green Energy</a>
+  </nav>
+
+  <section class="section-heading">
+    <div><h2>Featured projects</h2><p>Explore the projects listed on BitForge</p></div>
+    <a href="{{ url_for('market') }}">See all <span>→</span></a>
+  </section>
+
+  <section class="featured-list">
+    {% for p in products %}
+    <article class="featured-card">
+      <a class="featured-image" href="{{ url_for('market') }}"><img src="{{ url_for('static',filename='images/'+p.image) }}" alt="{{ p.name }}"></a>
+      <div class="featured-info">
+        <span class="category-tag">{{ p.category }}</span>
+        <h3>{{ p.name }}</h3>
+        <p class="description">{{ p.description }}</p>
+        <p class="muted detail-line">{{ p.duration }} <span>•</span> {{ p.risk }} risk</p>
+        <div class="price-line"><span>Minimum amount</span><strong>UGX {{ "{:,.0f}".format(p.minimum) }}</strong></div>
+        <a class="add-button" href="{{ url_for('market') }}">View project</a>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="wallet-preview">
+    <div class="wallet-title"><span>INVESTMENT WALLET</span><a href="{{ url_for('wallet') }}">Details →</a></div>
+    <p>Total Balance</p>
+    <h2>UGX {{ "{:,.0f}".format(user.balance) }}</h2>
+    <div class="wallet-actions"><a href="{{ url_for('deposit') }}">↓　Deposit</a><a href="{{ url_for('withdraw') }}">↑　Withdraw</a></div>
+  </section>
+
+  <section class="section-heading quick-heading"><div><h2>Quick access</h2><p>Manage your BitForge account</p></div></section>
+  <section class="quick-links">
+    <a href="{{ url_for('wallet') }}"><span>▣</span><small>Wallet</small></a>
+    <a href="{{ url_for('deposit') }}"><span>＋</span><small>Deposit</small></a>
+    <a href="{{ url_for('withdraw') }}"><span>↗</span><small>Withdraw</small></a>
+    <a href="{{ url_for('orders') }}"><span>▤</span><small>Orders</small></a>
+  </section>
+
+  <section class="section-heading activity-heading"><div><h2>Recent activity</h2><p>Your latest account requests</p></div><a href="{{ url_for('orders') }}">See all →</a></section>
+  <section class="activity-card">
+    {% for t in txns %}
+      <div class="activity-row"><span class="activity-symbol {% if 'Deposit' in t.kind %}deposit-symbol{% elif 'Withdrawal' in t.kind %}withdraw-symbol{% else %}other-symbol{% endif %}">{% if 'Deposit' in t.kind %}+{% elif 'Withdrawal' in t.kind %}−{% else %}▣{% endif %}</span><div class="activity-main"><b>{{ t.kind }}</b><small>{{ t.created_at }} · {{ t.status }}</small></div><strong>UGX {{ "{:,.0f}".format(t.amount) }}</strong></div>
+    {% else %}
+      <p class="empty-activity">Your recent transactions will appear here.</p>
+    {% endfor %}
+  </section>
+  <p class="disclaimer">Project information is illustrative. Returns are not guaranteed. Deposit and withdrawal requests require review; this demo does not process mobile-money payments.</p>
+</main>
+{% include "nav.html" %}
+<script>
+(() => {
+  const slides = Array.from(document.querySelectorAll('.hero-slide'));
+  const dots = Array.from(document.querySelectorAll('.slider-dots button'));
+  if (!slides.length) return;
+  let active = 0, timer;
+  function show(index) {
+    active = (index + slides.length) % slides.length;
+    slides.forEach((slide, i) => slide.classList.toggle('active', i === active));
+    dots.forEach((dot, i) => dot.classList.toggle('current', i === active));
+  }
+  function restart() { clearInterval(timer); timer = setInterval(() => show(active + 1), 5000); }
+  document.querySelector('.slider-prev').addEventListener('click', () => { show(active - 1); restart(); });
+  document.querySelector('.slider-next').addEventListener('click', () => { show(active + 1); restart(); });
+  dots.forEach((dot, i) => dot.addEventListener('click', () => { show(i); restart(); }));
+  restart();
+})();
+const menuButton = document.getElementById('menuButton');
+const menuPopover = document.getElementById('menuPopover');
+menuButton.addEventListener('click', () => menuPopover.classList.toggle('open'));
+document.addEventListener('click', e => { if (!menuPopover.contains(e.target) && !menuButton.contains(e.target)) menuPopover.classList.remove('open'); });
+document.getElementById('darkModeButton').addEventListener('click', () => document.body.classList.toggle('dark-mode'));
+</script>
+{% endblock %}
