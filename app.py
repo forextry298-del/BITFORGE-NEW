@@ -1,4 +1,4 @@
-import os, sqlite3
+import os, sqlite3, shutil
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, g
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,6 +9,12 @@ app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-before-deploym
 DATA_DIR = os.environ.get("BITFORGE_DATA_DIR") or ("/var/data" if os.path.isdir("/var/data") else os.path.dirname(__file__))
 os.makedirs(DATA_DIR, exist_ok=True)
 DB = os.path.join(DATA_DIR, "bitforge.db")
+LEGACY_DB = os.path.join(os.path.dirname(__file__), "bitforge.db")
+# On the first deployment with a newly attached persistent disk, carry forward
+# the database shipped with the app if the persistent location has no database.
+if not os.path.exists(DB) and os.path.isfile(LEGACY_DB) and os.path.abspath(DB) != os.path.abspath(LEGACY_DB):
+    shutil.copy2(LEGACY_DB, DB)
+
 
 PRODUCTS = [
     {"id": 1, "name": "Solar Farm Project", "category": "Solar", "description": "Solar energy infrastructure project", "minimum": 25000, "duration": "36 months", "risk": "Low", "return_text": "Indicative 8–10% p.a.", "image": "solar_farm.jpg"},
@@ -27,6 +33,36 @@ def close_db(error=None):
     conn = g.pop("db", None)
     if conn is not None:
         conn.close()
+
+def normalize_phone(value):
+    """Normalize Ugandan mobile numbers to +256XXXXXXXXX."""
+    raw = (value or "").strip()
+    digits = "".join(ch for ch in raw if ch.isdigit())
+    if digits.startswith("256") and len(digits) == 12:
+        return "+" + digits
+    if digits.startswith("0") and len(digits) == 10:
+        return "+256" + digits[1:]
+    if len(digits) == 9:
+        return "+256" + digits
+    # Keep international/non-Ugandan numbers in a consistent +digits form.
+    return "+" + digits if digits else ""
+
+def phone_lookup_values(value):
+    """Match accounts created before normalization as well as new accounts."""
+    raw = (value or "").strip()
+    digits = "".join(ch for ch in raw if ch.isdigit())
+    canonical = normalize_phone(raw)
+    variants = {raw, digits, canonical}
+    if digits.startswith("256") and len(digits) == 12:
+        variants.add("0" + digits[3:])
+        variants.add(digits[3:])
+    elif digits.startswith("0") and len(digits) == 10:
+        variants.add("256" + digits[1:])
+        variants.add(digits[1:])
+    elif len(digits) == 9:
+        variants.add("0" + digits)
+        variants.add("256" + digits)
+    return tuple(v for v in variants if v)
 
 def init_db():
     with sqlite3.connect(DB) as conn:
@@ -66,7 +102,7 @@ def index():
 def register():
     if request.method == "POST":
         name = request.form.get("full_name", "").strip()
-        phone = request.form.get("phone", "").strip()
+        phone = normalize_phone(request.form.get("phone", ""))
         password = request.form.get("password", "")
         confirm = request.form.get("confirm_password", "")
         if not name or not phone or not password:
@@ -77,6 +113,13 @@ def register():
             flash("Use at least 6 characters for your password.")
         else:
             try:
+                existing = db().execute(
+                    "SELECT id FROM users WHERE phone IN (" + ",".join("?" for _ in phone_lookup_values(phone)) + ") LIMIT 1",
+                    phone_lookup_values(phone)
+                ).fetchone()
+                if existing:
+                    flash("That phone number is already registered. Please sign in.")
+                    return render_template("register.html")
                 db().execute("INSERT INTO users(full_name, phone, password_hash) VALUES(?,?,?)",
                              (name, phone, generate_password_hash(password)))
                 db().commit()
@@ -89,9 +132,14 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        phone = request.form.get("phone", "").strip()
+        phone_values = phone_lookup_values(request.form.get("phone", ""))
         password = request.form.get("password", "")
-        user = db().execute("SELECT * FROM users WHERE phone=?", (phone,)).fetchone()
+        user = None
+        if phone_values:
+            user = db().execute(
+                "SELECT * FROM users WHERE phone IN (" + ",".join("?" for _ in phone_values) + ") ORDER BY id LIMIT 1",
+                phone_values
+            ).fetchone()
         if user and check_password_hash(user["password_hash"], password):
             session.clear()
             session["user_id"] = user["id"]
@@ -186,6 +234,12 @@ def account():
     return render_template("account.html", user=user)
 
 init_db()
+try:
+    with sqlite3.connect(DB) as _check:
+        _users = _check.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    print(f"[BITFORGE] Database active: {DB} | registered users: {_users}", flush=True)
+except Exception as _err:
+    print(f"[BITFORGE] Database startup check failed: {_err}", flush=True)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
