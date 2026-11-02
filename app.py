@@ -5,7 +5,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-before-deployment")
-DB = os.path.join(os.path.dirname(__file__), "bitforge.db")
+# Use Render's persistent disk when available; otherwise keep the local Termux DB.
+DATA_DIR = os.environ.get("BITFORGE_DATA_DIR") or ("/var/data" if os.path.isdir("/var/data") else os.path.dirname(__file__))
+os.makedirs(DATA_DIR, exist_ok=True)
+DB = os.path.join(DATA_DIR, "bitforge.db")
 
 PRODUCTS = [
     {"id": 1, "name": "Solar Farm Project", "category": "Solar", "description": "Solar energy infrastructure project", "minimum": 25000, "duration": "36 months", "risk": "Low", "return_text": "Indicative 8–10% p.a.", "image": "solar_farm.jpg"},
@@ -44,10 +47,6 @@ def init_db():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""")
         conn.commit()
-
-@app.before_request
-def ensure_db():
-    init_db()
 
 def login_required(fn):
     @wraps(fn)

@@ -73,7 +73,7 @@ body{font-size:16px}
 }
 @media(min-width:620px){.wrap{max-width:680px}.hero-slider{height:320px}}
 
-/* Deposit screen: mobile-first, fitted to the viewport without CSS zoom */
+/* Deposit screen: mobile-first responsive layout */
 .deposit-header{min-height:112px;background:var(--page);display:flex;align-items:flex-start;gap:18px;padding:28px max(22px,calc((100vw - 600px)/2)) 12px}
 .deposit-back{font-size:38px;line-height:1;color:var(--ink);font-weight:400;margin-top:5px;width:42px;flex:0 0 42px}
 .deposit-header h1{font-size:clamp(30px,7vw,38px);line-height:1.15;letter-spacing:-1.1px;margin:0 0 10px;font-weight:850}
