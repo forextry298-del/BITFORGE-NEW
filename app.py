@@ -17,9 +17,9 @@ if not os.path.exists(DB) and os.path.isfile(LEGACY_DB) and os.path.abspath(DB) 
 
 
 PRODUCTS = [
-    {"id": 1, "name": "Solar Farm Project", "category": "Solar", "description": "Solar energy infrastructure project", "minimum": 25000, "duration": "36 months", "risk": "Low", "return_text": "Indicative 8–10% p.a.", "image": "solar_farm.jpg"},
-    {"id": 2, "name": "Commercial Property", "category": "Real Estate", "description": "Commercial office property project", "minimum": 50000, "duration": "48 months", "risk": "Medium", "return_text": "Indicative 9–12% p.a.", "image": "real_estate.jpg"},
-    {"id": 3, "name": "Green Energy Fund", "category": "Green Energy", "description": "Wind and clean-energy infrastructure", "minimum": 10000, "duration": "24 months", "risk": "Medium", "return_text": "Indicative 6–7% p.a.", "image": "green_energy.jpg"},
+    {"id": 1, "name": "Solar Farm Project", "category": "Solar", "description": "Solar energy infrastructure project", "minimum": 5000, "maximum": 100000, "daily_projection": "20%", "duration": "456 days", "risk": "High", "return_text": "Illustrative projection: 20% daily; not guaranteed", "image": "solar_farm.jpg"},
+    {"id": 2, "name": "Commercial Property", "category": "Real Estate", "description": "Commercial property project", "minimum": 150000, "maximum": 1000000, "daily_projection": "34%", "duration": "Terms to be confirmed", "risk": "High", "return_text": "Illustrative projection: 34% daily; not guaranteed", "image": "real_estate.jpg"},
+    {"id": 3, "name": "Green Energy Fund", "category": "Green Energy", "description": "Wind and clean-energy infrastructure", "minimum": 2000000, "maximum": 5000000, "daily_projection": "47.6%", "duration": "Terms to be confirmed", "risk": "High", "return_text": "Illustrative projection: 47.6% daily; not guaranteed", "image": "green_energy.jpg"},
 ]
 
 def db():
@@ -90,6 +90,15 @@ def init_db():
             kind TEXT NOT NULL,
             amount REAL NOT NULL,
             status TEXT NOT NULL DEFAULT 'Pending',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )""")
+        conn.execute("""CREATE TABLE IF NOT EXISTS mine_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            product_id INTEGER NOT NULL,
+            product_name TEXT NOT NULL,
+            amount REAL NOT NULL,
+            status TEXT NOT NULL DEFAULT 'Pending review',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""")
         conn.commit()
@@ -184,6 +193,30 @@ def market():
     if query:
         products = [p for p in products if query in (p["name"] + " " + p["category"] + " " + p["description"]).lower()]
     return render_template("market.html", products=products, category=category, query=query)
+
+@app.route("/mine/<int:product_id>", methods=["POST"])
+@login_required
+def mine(product_id):
+    product = next((p for p in PRODUCTS if p["id"] == product_id), None)
+    if product is None:
+        flash("That product is unavailable.")
+        return redirect(url_for("market"))
+    try:
+        amount = float(request.form.get("amount", "0"))
+    except (TypeError, ValueError):
+        amount = 0
+    if amount < product["minimum"] or amount > product["maximum"]:
+        flash("Enter an amount within this product's investment range.")
+        return redirect(url_for("market"))
+    # A MINE click creates a review request only. No wallet debit or return is
+    # made until funding, terms, and actual realized earnings are verified.
+    db().execute(
+        "INSERT INTO mine_requests(user_id, product_id, product_name, amount) VALUES(?,?,?,?)",
+        (session["user_id"], product["id"], product["name"], amount)
+    )
+    db().commit()
+    flash("Mining request submitted for review. No funds were deducted and no earnings were credited.")
+    return redirect(url_for("market"))
 
 @app.route("/wallet")
 @login_required
