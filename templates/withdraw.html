@@ -6,6 +6,7 @@
   <form class="withdraw-form" method="post">
     <div class="withdraw-amount-label"><label for="withdraw-amount">Amount to withdraw</label><span>Max: UGX {{ "{:,.0f}".format(user.balance) }}</span></div>
     <div class="withdraw-input-wrap"><span>UGX</span><input id="withdraw-amount" name="amount" type="number" min="10000" max="{{ user.balance }}" step="1000" placeholder="Enter amount" required></div>
+    <div class="field payout-phone-field"><label for="payout-phone">MOBILE MONEY NUMBER TO RECEIVE FUNDS</label><input id="payout-phone" name="payout_phone" type="tel" inputmode="tel" placeholder="e.g. 0757 123456" required></div>
     <div class="withdraw-fee-box" aria-live="polite">
       <div><span>Withdrawal amount</span><b id="fee-gross">UGX 0.00</b></div>
       <div><span>Withdrawal fee (6%)</span><b id="fee-value">UGX 0.00</b></div>

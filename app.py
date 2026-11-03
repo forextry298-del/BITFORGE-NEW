@@ -272,17 +272,27 @@ def mine(product_id):
     if amount < product["minimum"] or amount > product["maximum"]:
         flash("Enter an amount within this mining rig's UGX range.")
         return redirect(url_for("market"))
-    # Record a transparent activation request. Do not debit the wallet or
-    # fabricate daily mining credits until a real pool and settlement feed exist.
-    user = db().execute("SELECT balance FROM users WHERE id=?", (session["user_id"],)).fetchone()
-    if not user or float(user["balance"] or 0) < amount:
-        flash("INSUFFICIENT FUNDS")
-        return redirect(url_for("market"))
+    # Purchase is charged immediately and atomically. No automatic mining
+    # earnings are ever credited; real credits require verified pool settlement.
     scenario = round(amount * float(product["daily_rate"]) / 100, 2)
-    db().execute("INSERT INTO mine_requests(user_id,product_id,product_name,amount,status,daily_scenario) VALUES(?,?,?,?,?,?)",
-                 (session["user_id"], product_id, product["name"], amount, "Awaiting verified pool activation", scenario))
-    db().commit()
-    flash("Mining rig request created successfully. It is awaiting verified pool activation. No funds were deducted and the displayed daily figure is only an estimate; actual earnings require verified pool settlement.")
+    conn = db()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        debit = conn.execute("UPDATE users SET balance=balance-? WHERE id=? AND balance>=?",
+                             (amount, session["user_id"], amount))
+        if debit.rowcount != 1:
+            conn.rollback()
+            flash("INSUFFICIENT FUNDS")
+            return redirect(url_for("market"))
+        conn.execute("INSERT INTO mine_requests(user_id,product_id,product_name,amount,status,daily_scenario) VALUES(?,?,?,?,?,?)",
+                     (session["user_id"], product_id, product["name"], amount, "Purchased · awaiting verified pool activation", scenario))
+        conn.execute("INSERT INTO transactions(user_id,kind,amount,status) VALUES(?,?,?,'Completed')",
+                     (session["user_id"], "Mining rig purchase · " + product["name"], amount))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    flash("Purchase successful. The purchase amount has been deducted from your balance. No mining earnings will be auto-credited; verified pool settlement is required.")
     return redirect(url_for("orders"))
 
 @app.route("/chats", methods=["GET", "POST"])
@@ -428,7 +438,10 @@ def withdraw():
             amount = float(request.form.get("amount", "0"))
         except ValueError:
             amount = 0
-        if amount < 10000:
+        payout_phone = normalize_phone(request.form.get("payout_phone", ""))
+        if not payout_phone or len("".join(c for c in payout_phone if c.isdigit())) < 10:
+            flash("Enter the mobile money number that should receive your withdrawal.")
+        elif amount < 10000:
             flash("Minimum withdrawal request is UGX 10,000.")
         elif amount > user["balance"]:
             flash("INSUFFICIENT FUNDS")
@@ -445,8 +458,8 @@ def withdraw():
                     conn.rollback()
                     flash("INSUFFICIENT FUNDS")
                 else:
-                    conn.execute("INSERT INTO transactions(user_id,kind,amount,status,fee,payout_amount) VALUES(?,?,?,?,?,?)",
-                                 (session["user_id"], "Withdrawal", amount, "Pending", fee, payout))
+                    conn.execute("INSERT INTO transactions(user_id,kind,amount,status,fee,payout_amount,payer_phone) VALUES(?,?,?,?,?,?,?)",
+                                 (session["user_id"], "Withdrawal", amount, "Pending", fee, payout, payout_phone))
                     conn.commit()
                     flash(f"Withdrawal submitted. UGX {amount:,.0f} deducted from available balance. Fee: UGX {fee:,.0f}; payout after approval: UGX {payout:,.0f}.")
                     return redirect(url_for("wallet"))
@@ -551,7 +564,31 @@ def admin_dashboard():
         action = request.form.get("action")
         uid = request.form.get("user_id", type=int)
         txid = request.form.get("transaction_id", type=int)
-        if action == "block" and uid:
+        if action == "adjust_balance" and uid:
+            try:
+                new_balance = float(request.form.get("new_balance", ""))
+                if new_balance < 0 or new_balance > 1e12:
+                    raise ValueError()
+                old = db().execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
+                if not old:
+                    flash("User not found.")
+                else:
+                    delta = round(new_balance - float(old["balance"] or 0), 2)
+                    db().execute("UPDATE users SET balance=? WHERE id=?", (new_balance, uid))
+                    db().execute("INSERT INTO transactions(user_id,kind,amount,status) VALUES(?,?,?,'Completed')",
+                                 (uid, "Admin balance adjustment", delta))
+                    db().commit(); flash("User balance updated.")
+            except (TypeError, ValueError):
+                flash("Enter a valid non-negative balance.")
+        elif action == "admin_reply":
+            reply_uid = request.form.get("reply_user_id", type=int)
+            message = request.form.get("message", "").strip()
+            if reply_uid and message and len(message) <= 2000 and db().execute("SELECT id FROM users WHERE id=?", (reply_uid,)).fetchone():
+                db().execute("INSERT INTO support_messages(user_id,sender,message) VALUES(?, 'admin', ?)", (reply_uid, message))
+                db().commit(); flash("Reply sent to member.")
+            else:
+                flash("Select a member and enter a reply (maximum 2,000 characters).")
+        elif action == "block" and uid:
             db().execute("UPDATE users SET is_blocked=1 WHERE id=?", (uid,))
             db().commit(); flash("User blocked.")
         elif action == "unblock" and uid:
@@ -604,9 +641,9 @@ def admin_dashboard():
         return redirect(url_for("admin_dashboard"))
     search = request.args.get("q", "").strip()
     if search:
-        users = db().execute("SELECT id,full_name,phone,balance,created_at,is_blocked FROM users WHERE full_name LIKE ? OR phone LIKE ? ORDER BY id DESC", (f"%{search}%", f"%{search}%")).fetchall()
+        users = db().execute("SELECT u.id,u.full_name,u.phone,u.balance,u.created_at,u.is_blocked,u.referral_code,u.referred_by,ref.referral_code AS invited_by_code FROM users u LEFT JOIN users ref ON ref.id=u.referred_by WHERE u.full_name LIKE ? OR u.phone LIKE ? ORDER BY u.id DESC", (f"%{search}%", f"%{search}%")).fetchall()
     else:
-        users = db().execute("SELECT id,full_name,phone,balance,created_at,is_blocked FROM users ORDER BY id DESC").fetchall()
+        users = db().execute("SELECT u.id,u.full_name,u.phone,u.balance,u.created_at,u.is_blocked,u.referral_code,u.referred_by,ref.referral_code AS invited_by_code FROM users u LEFT JOIN users ref ON ref.id=u.referred_by ORDER BY u.id DESC").fetchall()
     stats = {
         "users": db().execute("SELECT COUNT(*) FROM users").fetchone()[0],
         "active": db().execute("SELECT COUNT(*) FROM users WHERE is_blocked=0").fetchone()[0],
@@ -615,12 +652,17 @@ def admin_dashboard():
     }
     deposits = db().execute("SELECT t.*,u.full_name,u.phone FROM transactions t JOIN users u ON u.id=t.user_id WHERE t.kind LIKE 'Deposit%' AND t.status='Pending verification' ORDER BY t.id").fetchall()
     withdrawals = db().execute("SELECT t.*,u.full_name,u.phone FROM transactions t JOIN users u ON u.id=t.user_id WHERE t.kind='Withdrawal' AND t.status='Pending' ORDER BY t.id").fetchall()
-    return render_template("admin_panel.html", users=users, deposits=deposits, withdrawals=withdrawals, stats=stats, search=search)
+    support_threads = db().execute("""SELECT u.id AS user_id,u.full_name,u.phone,
+        (SELECT message FROM support_messages m WHERE m.user_id=u.id ORDER BY m.id DESC LIMIT 1) AS last_message,
+        (SELECT created_at FROM support_messages m WHERE m.user_id=u.id ORDER BY m.id DESC LIMIT 1) AS last_time
+        FROM users u WHERE EXISTS (SELECT 1 FROM support_messages m WHERE m.user_id=u.id)
+        ORDER BY (SELECT MAX(id) FROM support_messages m WHERE m.user_id=u.id) DESC LIMIT 30""").fetchall()
+    return render_template("admin_panel.html", users=users, deposits=deposits, withdrawals=withdrawals, stats=stats, search=search, support_threads=support_threads)
 
 @app.route("/admin/user/<int:user_id>")
 @admin_required
 def admin_user_detail(user_id):
-    member = db().execute("SELECT id,full_name,phone,balance,created_at,is_blocked FROM users WHERE id=?", (user_id,)).fetchone()
+    member = db().execute("SELECT u.id,u.full_name,u.phone,u.balance,u.created_at,u.is_blocked,u.referral_code,u.referred_by,ref.referral_code AS invited_by_code FROM users u LEFT JOIN users ref ON ref.id=u.referred_by WHERE u.id=?", (user_id,)).fetchone()
     if not member:
         flash("User not found.")
         return redirect(url_for("admin_dashboard"))

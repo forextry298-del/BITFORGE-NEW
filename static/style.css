@@ -422,3 +422,13 @@ body{background:var(--page);color:var(--ink);font-size:15px}
 .mine-status{display:inline-block;margin:5px 0;padding:4px 9px;border-radius:20px;background:#fff2d8;color:#8b5b13;font-size:12px;font-weight:700}
 .cycle-timer{font-weight:800;color:#9a671e;font-variant-numeric:tabular-nums}
 @media(max-width:480px){.admin-dashboard-page{width:calc(100% - 22px);padding-left:0;padding-right:0}.admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-user-actions .btn,.admin-action-card .btn{font-size:13px;padding:10px}.admin-search{flex-direction:column}.mining-live-card{gap:10px}.orders-rig-image{width:82px;height:100px;flex-basis:82px}.orders-record-main{min-width:0}.orders-record-main small{overflow-wrap:anywhere}}
+
+/* Compact, readable page headings and admin tools */
+.page-title{font-size:clamp(22px,5.5vw,28px)!important;line-height:1.15}
+.content h1:not(.hero-text h1){font-size:clamp(22px,5.5vw,28px)}
+.admin-dashboard-page>h2{font-size:17px!important}
+.admin-inline-reply{display:grid;gap:8px;margin:9px 0}
+.admin-inline-reply textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:11px;padding:10px;font:inherit;font-size:13px;resize:vertical}
+.payout-phone-field{margin:12px 0}
+.payout-phone-field input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #d9dce3;border-radius:13px;font:inherit;font-size:15px}
+.content h1,.content .page-title{font-size:clamp(22px,5.5vw,28px)!important;line-height:1.15}
