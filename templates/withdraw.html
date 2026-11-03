@@ -14,10 +14,10 @@
       <div><span>Withdrawal fee (6%)</span><b id="fee-value">UGX 0.00</b></div>
       <div class="withdraw-net"><span>You receive</span><b id="fee-net">UGX 0.00</b></div>
     </div>
-    <div class="withdraw-note">{{ icon('shield',17) }} A 6% processing fee is deducted from the requested amount. The remaining 94% is the estimated payout after approval. Never share your PIN.</div>
+    <div class="withdraw-note">{{ icon('shield',17) }} The full requested amount is reserved from your available balance immediately. A 6% fee is deducted; the remaining 94% is payable after approval. If rejected, the full reserved amount is refunded. Never share your PIN.</div>
     {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}{% endwith %}
     <button class="withdraw-submit" type="submit">Withdraw Funds</button>
-    <p class="withdraw-disclaimer">Minimum withdrawal request: UGX 10,000. Requests are subject to balance checks and payment verification. The fee and payout are shown before you submit.</p>
+    <p class="withdraw-disclaimer">Minimum withdrawal request: UGX 10,000. Funds are deducted from available balance when submitted. Rejected requests are refunded. The 6% fee and 94% payout are shown before you submit.</p>
   </form>
   <section class="withdraw-history"><div class="withdraw-history-head"><h2>Withdrawal History</h2><a href="{{ url_for('orders') }}">See all →</a></div>
     {% for t in txns %}<div class="withdraw-history-row"><span class="withdraw-history-icon">{{ icon('withdraw',22) }}</span><div class="withdraw-history-copy"><b>{{ t.kind }} · {{ t.status }}</b><small>{{ t.created_at }}</small></div><strong>−UGX {{ "{:,.0f}".format(t.amount) }}</strong></div>

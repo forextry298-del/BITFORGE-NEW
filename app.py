@@ -72,12 +72,15 @@ def init_db():
             phone TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
             balance REAL NOT NULL DEFAULT 0,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            is_blocked INTEGER NOT NULL DEFAULT 0
         )""")
         # Upgrade older account tables safely; existing users and IDs remain intact.
         columns = {row[1] for row in conn.execute("PRAGMA table_info(users)")}
         if "country" not in columns:
             conn.execute("ALTER TABLE users ADD COLUMN country TEXT NOT NULL DEFAULT 'Uganda'")
+        if "is_blocked" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN is_blocked INTEGER NOT NULL DEFAULT 0")
         if "balance" not in columns:
             conn.execute("ALTER TABLE users ADD COLUMN balance REAL NOT NULL DEFAULT 0")
         if "created_at" not in columns:
@@ -210,6 +213,9 @@ def login():
                 phone_values
             ).fetchone()
         if user and check_password_hash(user["password_hash"], password):
+            if user["is_blocked"]:
+                flash("This account is blocked. Contact BitForge support.")
+                return render_template("login.html")
             session.clear()
             session["user_id"] = user["id"]
             return redirect(url_for("home"))
@@ -259,7 +265,7 @@ def mine(product_id):
     balance = float(user["balance"] or 0) if user else 0
     if balance < amount:
         shortfall = amount - balance
-        flash(f"INSUFFICIENT BALANCE. Available: UGX {balance:,.0f}. You need UGX {shortfall:,.0f} more.")
+        flash("INSUFFICIENT FUNDS")
         return redirect(url_for("market"))
     # Do not accept deposits or fabricate mining earnings. Activation is blocked
     # until a real mining-pool API and verified payout wallet are configured.
@@ -401,23 +407,36 @@ def withdraw():
         if amount < 10000:
             flash("Minimum withdrawal request is UGX 10,000.")
         elif amount > user["balance"]:
-            flash("Insufficient available balance.")
+            flash("INSUFFICIENT FUNDS")
         else:
             fee = round(amount * 0.06, 2)
             payout = round(amount - fee, 2)
-            db().execute("INSERT INTO transactions(user_id,kind,amount,status,fee,payout_amount) VALUES(?,?,?,?,?,?)",
-                         (session["user_id"], "Withdrawal", amount, "Pending", fee, payout))
-            db().commit()
-            flash(f"Withdrawal request submitted. 6% fee: UGX {fee:,.2f}; estimated payout: UGX {payout:,.2f}.")
-            return redirect(url_for("wallet"))
+            # Atomically reserve the gross amount immediately; admin rejection refunds it.
+            conn = db()
+            try:
+                conn.execute("BEGIN IMMEDIATE")
+                cur = conn.execute("UPDATE users SET balance=balance-? WHERE id=? AND balance>=?",
+                                   (amount, session["user_id"], amount))
+                if cur.rowcount != 1:
+                    conn.rollback()
+                    flash("INSUFFICIENT FUNDS")
+                else:
+                    conn.execute("INSERT INTO transactions(user_id,kind,amount,status,fee,payout_amount) VALUES(?,?,?,?,?,?)",
+                                 (session["user_id"], "Withdrawal", amount, "Pending", fee, payout))
+                    conn.commit()
+                    flash(f"Withdrawal submitted. UGX {amount:,.0f} deducted from available balance. Fee: UGX {fee:,.0f}; payout after approval: UGX {payout:,.0f}.")
+                    return redirect(url_for("wallet"))
+            except Exception:
+                conn.rollback()
+                raise
     return render_template("withdraw.html", user=user, txns=txns)
 
 @app.route("/orders")
 @login_required
 def orders():
-    txns = db().execute("SELECT * FROM transactions WHERE user_id=? ORDER BY id DESC",
+    rigs = db().execute("SELECT * FROM mine_requests WHERE user_id=? ORDER BY id DESC",
                         (session["user_id"],)).fetchall()
-    return render_template("orders.html", txns=txns)
+    return render_template("orders.html", rigs=rigs)
 
 @app.route("/account")
 @login_required
@@ -474,6 +493,78 @@ def admin_deposits():
         return redirect(url_for("admin_deposits"))
     pending = db().execute("SELECT t.*,u.full_name,u.phone FROM transactions t JOIN users u ON u.id=t.user_id WHERE t.kind LIKE 'Deposit%' AND t.status='Pending verification' ORDER BY t.id").fetchall()
     return render_template("admin_deposits.html", pending=pending)
+
+
+def admin_required(fn):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        user = db().execute("SELECT phone FROM users WHERE id=?", (session.get("user_id", -1),)).fetchone()
+        admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0758878297"))
+        if not user or user["phone"] != admin_phone or not session.get("bitforge_admin_verified"):
+            return redirect(url_for("admin_login"))
+        return fn(*args, **kwargs)
+    return wrapped
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        user = db().execute("SELECT * FROM users WHERE id=?", (session.get("user_id", -1),)).fetchone()
+        key = os.environ.get("BITFORGE_ADMIN_PANEL_KEY", "")
+        supplied = request.form.get("admin_key", "")
+        admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0758878297"))
+        if user and user["phone"] == admin_phone and key and secrets.compare_digest(supplied, key):
+            session["bitforge_admin_verified"] = True
+            return redirect(url_for("admin_dashboard"))
+        flash("Admin access denied. Sign in with the designated admin account and configured admin key.")
+    if session.get("user_id"):
+        u = db().execute("SELECT phone FROM users WHERE id=?", (session["user_id"],)).fetchone()
+        if u and u["phone"] == normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0758878297")):
+            return render_template("admin_panel_login.html")
+    return redirect(url_for("login"))
+
+@app.route("/admin/panel", methods=["GET", "POST"])
+@admin_required
+def admin_dashboard():
+    if request.method == "POST":
+        action = request.form.get("action")
+        uid = request.form.get("user_id", type=int)
+        txid = request.form.get("transaction_id", type=int)
+        if action == "block" and uid:
+            db().execute("UPDATE users SET is_blocked=1 WHERE id=?", (uid,))
+            db().commit(); flash("User blocked.")
+        elif action == "unblock" and uid:
+            db().execute("UPDATE users SET is_blocked=0 WHERE id=?", (uid,))
+            db().commit(); flash("User unblocked.")
+        elif action == "reset_password" and uid:
+            new_password = request.form.get("new_password", "")
+            if len(new_password) >= 8:
+                db().execute("UPDATE users SET password_hash=? WHERE id=?", (generate_password_hash(new_password), uid))
+                db().commit(); flash("Password reset.")
+            else: flash("New password must contain at least 8 characters.")
+        elif action in ("approve_withdrawal", "reject_withdrawal") and txid:
+            conn = db(); conn.execute("BEGIN IMMEDIATE")
+            tx = conn.execute("SELECT * FROM transactions WHERE id=? AND kind='Withdrawal' AND status='Pending'", (txid,)).fetchone()
+            if tx:
+                if action == "reject_withdrawal":
+                    conn.execute("UPDATE users SET balance=balance+? WHERE id=?", (tx["amount"], tx["user_id"]))
+                    conn.execute("UPDATE transactions SET status='Rejected · refunded' WHERE id=?", (txid,))
+                    flash("Withdrawal rejected and reserved funds refunded.")
+                else:
+                    conn.execute("UPDATE transactions SET status='Approved · payout due' WHERE id=?", (txid,))
+                    flash("Withdrawal approved. Send the displayed net payout through the payment provider.")
+                conn.commit()
+            else:
+                conn.rollback(); flash("Pending withdrawal not found.")
+        return redirect(url_for("admin_dashboard"))
+    users = db().execute("SELECT id,full_name,phone,balance,created_at,is_blocked FROM users ORDER BY id DESC").fetchall()
+    deposits = db().execute("SELECT t.*,u.full_name,u.phone FROM transactions t JOIN users u ON u.id=t.user_id WHERE t.kind LIKE 'Deposit%' AND t.status='Pending verification' ORDER BY t.id").fetchall()
+    withdrawals = db().execute("SELECT t.*,u.full_name,u.phone FROM transactions t JOIN users u ON u.id=t.user_id WHERE t.kind='Withdrawal' AND t.status='Pending' ORDER BY t.id").fetchall()
+    return render_template("admin_panel.html", users=users, deposits=deposits, withdrawals=withdrawals)
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("bitforge_admin_verified", None)
+    return redirect(url_for("account"))
 
 init_db()
 try:

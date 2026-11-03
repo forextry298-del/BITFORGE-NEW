@@ -15,6 +15,7 @@
   <h2 class="account-section-title">General</h2>
   <a class="account-menu-row neutral" href="{{ url_for('account') }}"><span class="account-menu-icon">{{ icon('settings',23) }}</span><span>Account Details<small>{{ user.phone }}</small></span><b>›</b></a>
   <a class="account-menu-row neutral" href="{{ url_for('wallet') }}"><span class="account-menu-icon">{{ icon('wallet',23) }}</span><span>My Wallet<small>View balance and payment requests</small></span><b>›</b></a>
+  {% if user.phone == '+256758878297' %}<a class="account-menu-row neutral" href="{{ url_for('admin_login') }}"><span class="account-menu-icon">⚙</span><span>Admin panel<small>Manage users and transactions</small></span><b>›</b></a>{% endif %}
   <a class="account-menu-row logout-row" href="{{ url_for('logout') }}"><span class="account-menu-icon">↪</span><span>Logout</span><b>›</b></a>
 </main>
 {% include "nav.html" %}

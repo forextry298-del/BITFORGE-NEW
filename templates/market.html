@@ -10,7 +10,7 @@
   <div class="market-tools">
     <a class="market-tool" href="{{ url_for('market') }}"><span class="tool-btc">₿</span><b>Mining Rigs</b></a>
     <a class="market-tool" href="{{ url_for('wallet') }}">{{ icon('briefcase',27) }}<b>My Requests</b></a>
-    <a class="market-tool" href="#mining-notice">{{ icon('shield',27) }}<b>Risk & Terms</b></a>
+    <a class="market-tool" href="#mining-terms">{{ icon('shield',27) }}<b>Risk & Terms</b></a>
   </div>
   <nav class="tabs mining-tabs" aria-label="Mining rig types">
     {% for c in ['All','SHA-256','ASIC PRO','HYDRO MAX'] %}<a class="{% if category==c %}active{% endif %}" href="{{ url_for('market',category=c) }}">{{ 'All Rigs' if c=='All' else c }}</a>{% endfor %}
@@ -38,7 +38,7 @@
     </article>
   {% else %}<p class="card muted">No mining rigs match this category.</p>{% endfor %}
   </section>
-  <section class="projection-notice mining-notice" id="mining-notice"><strong>Live mining connection status</strong><p>The displayed 20%, 34%, and 47.6% rates are user-requested scenario calculations only, not verified Bitcoin mining yields, promises, or guaranteed returns. The daily UGX figure updates from the amount entered and is labelled as an illustration. Actual BTC earnings must come from verified mining-pool settlement records. Mining hardware imagery is illustrative until physical equipment and a verified mining-pool account are connected. This release does not claim live hashrate, daily BTC earnings, or automatic payouts. Mining activation is deliberately blocked until a pool API, worker identity, payout address, and verified pool settlement records are configured. Wallet balance checks are performed, but no funds are deducted and no earnings are fabricated. The 4549-day term is a configured display period, not a guarantee of mining output.</p></section>
+  <p id="mining-terms" class="mining-footnote">Daily percentages are illustrative calculations, not guaranteed mining returns. Real payouts require verified mining-pool settlement data.</p>
 </main>
 
 {% include "nav.html" %}
