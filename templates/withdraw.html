@@ -16,7 +16,7 @@
       <div class="withdraw-net"><span>You receive</span><b id="fee-net">UGX 0.00</b></div>
     </div>
     <div class="withdraw-note">{{ icon('shield',17) }} The full requested amount is reserved from your available balance immediately. A 6% fee is deducted; the remaining 94% is payable after approval. If rejected, the full reserved amount is refunded. Never share your PIN.</div>
-    {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}{% endwith %}
+    {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash {% if 'success' in m|lower or 'successful' in m|lower or 'approved' in m|lower or 'credited' in m|lower %}flash-success{% elif 'failed' in m|lower or 'incorrect' in m|lower or 'insufficient' in m|lower or 'error' in m|lower or 'rejected' in m|lower or 'already registered' in m|lower %}flash-error{% endif %}">{{ m }}</div>{% endfor %}{% endwith %}
     <button class="withdraw-submit" type="submit">Withdraw Funds</button>
     <p class="withdraw-disclaimer">Minimum withdrawal request: UGX 10,000. Funds are deducted from available balance when submitted. Rejected requests are refunded. The 6% fee and 94% payout are shown before you submit.</p>
   </form>

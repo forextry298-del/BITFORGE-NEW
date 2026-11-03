@@ -49,7 +49,7 @@
       </div>
     </section>
 
-    {% with messages=get_flashed_messages() %}{% for message in messages %}<div class="flash">{{ message }}</div>{% endfor %}{% endwith %}
+    {% with messages=get_flashed_messages() %}{% for message in messages %}<div class="flash {% if 'success' in message|lower or 'successful' in message|lower or 'approved' in message|lower or 'credited' in message|lower %}flash-success{% elif 'failed' in message|lower or 'incorrect' in message|lower or 'insufficient' in message|lower or 'error' in message|lower or 'rejected' in message|lower or 'already registered' in message|lower %}flash-error{% endif %}">{{ message }}</div>{% endfor %}{% endwith %}
     <p class="deposit-terms">Secure agent-assisted deposit · BitForge Mining</p>
   </form>
   {% endif %}
