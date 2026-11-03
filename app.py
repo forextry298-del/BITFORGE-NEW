@@ -1,5 +1,7 @@
-import os, sqlite3, shutil, secrets
+import os, sqlite3, shutil, secrets, hmac
 from functools import wraps
+from datetime import datetime, timedelta, timezone
+from flask import jsonify
 from flask import Flask, render_template, request, redirect, url_for, session, flash, g
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -17,9 +19,9 @@ if not os.path.exists(DB) and os.path.isfile(LEGACY_DB) and os.path.abspath(DB) 
 
 
 PRODUCTS = [
-    {"id": 1, "name": "BITCOIN MINER · SHA-256", "category": "SHA-256", "description": "Bitcoin SHA-256 mining rig · pool connection required", "minimum": 5000, "maximum": 100000, "daily_rate": 20.0, "daily_projection": "Pool-reported only; scenario rate 20% is not a mining guarantee", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "mining_rig_robot.jpg", "hashrate": "Pool-reported only"},
-    {"id": 2, "name": "BITCOIN MINER · ASIC PRO", "category": "ASIC PRO", "description": "ASIC Bitcoin mining equipment · pool connection required", "minimum": 150000, "maximum": 1000000, "daily_rate": 34.0, "daily_projection": "Pool-reported only; scenario rate 34% is not a mining guarantee", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "bitcoin_mining_robot.jpg", "hashrate": "Pool-reported only"},
-    {"id": 3, "name": "BITCOIN MINER · HYDRO MAX", "category": "HYDRO MAX", "description": "High-capacity mining facility · pool connection required", "minimum": 2000000, "maximum": 5000000, "daily_rate": 47.6, "daily_projection": "Pool-reported only; scenario rate 47.6% is not a mining guarantee", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "industrial_mining_robot.jpg", "hashrate": "Pool-reported only"},
+    {"id": 1, "name": "BITCOIN MINER · SHA-256", "category": "SHA-256", "description": "Bitcoin SHA-256 mining rig", "minimum": 5000, "maximum": 100000, "daily_rate": 20.0, "daily_projection": "Illustrative daily estimate; paid only from funded reserve", "duration": "2458 days (configured term)", "risk": "Mining risk", "image": "mining_rig_robot.jpg", "hashrate": "Daily cycle"},
+    {"id": 2, "name": "BITCOIN MINER · ASIC PRO", "category": "ASIC PRO", "description": "ASIC Bitcoin mining equipment", "minimum": 150000, "maximum": 1000000, "daily_rate": 34.0, "daily_projection": "Illustrative daily estimate; paid only from funded reserve", "duration": "2458 days (configured term)", "risk": "Mining risk", "image": "bitcoin_mining_robot.jpg", "hashrate": "Daily cycle"},
+    {"id": 3, "name": "BITCOIN MINER · HYDRO MAX", "category": "HYDRO MAX", "description": "High-capacity mining facility", "minimum": 2000000, "maximum": 5000000, "daily_rate": 47.6, "daily_projection": "Illustrative daily estimate; paid only from funded reserve", "duration": "2458 days (configured term)", "risk": "Mining risk", "image": "industrial_mining_robot.jpg", "hashrate": "Daily cycle"},
 ]
 
 def db():
@@ -33,6 +35,12 @@ def close_db(error=None):
     conn = g.pop("db", None)
     if conn is not None:
         conn.close()
+
+@app.before_request
+def run_due_daily_credits():
+    if request.endpoint not in ("static", "internal_daily_earnings"):
+        process_daily_earnings()
+
 
 def normalize_phone(value):
     """Normalize Ugandan mobile numbers to +256XXXXXXXXX."""
@@ -152,6 +160,63 @@ def init_db():
         )""")
         conn.commit()
 
+def ensure_earnings_schema():
+    with sqlite3.connect(DB) as conn:
+        conn.execute("CREATE TABLE IF NOT EXISTS platform_reserve (id INTEGER PRIMARY KEY CHECK(id=1), available REAL NOT NULL DEFAULT 0)")
+        conn.execute("INSERT OR IGNORE INTO platform_reserve(id,available) VALUES(1,0)")
+        conn.execute("CREATE TABLE IF NOT EXISTS mining_credits (id INTEGER PRIMARY KEY AUTOINCREMENT, mine_request_id INTEGER NOT NULL, user_id INTEGER NOT NULL, cycle_number INTEGER NOT NULL, amount REAL NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(mine_request_id,cycle_number))")
+        conn.commit()
+
+
+def process_daily_earnings():
+    """Credit one due 24-hour cycle per rig, only when reserve cash is funded."""
+    ensure_earnings_schema()
+    now = datetime.now(timezone.utc)
+    credited = 0
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        rigs = conn.execute("SELECT * FROM mine_requests WHERE status LIKE 'Purchased%' OR status='Active'").fetchall()
+        reserve_row = conn.execute("SELECT available FROM platform_reserve WHERE id=1").fetchone()
+        reserve = float(reserve_row['available'] or 0) if reserve_row else 0.0
+        for rig in rigs:
+            try:
+                start = datetime.strptime(rig['created_at'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+            except (TypeError, ValueError):
+                continue
+            elapsed = max(0, int((now-start).total_seconds()))
+            max_cycles = min(2458, elapsed // 86400)
+            last = rig['last_credit_at']
+            if last:
+                try:
+                    last_dt = datetime.strptime(last, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+                    completed = max(0, int((last_dt-start).total_seconds()) // 86400)
+                except ValueError:
+                    completed = 0
+            else:
+                completed = 0
+            daily = round(float(rig['daily_scenario'] or 0), 2)
+            while completed < max_cycles and daily > 0 and reserve >= daily:
+                cycle = completed + 1
+                cur = conn.execute("INSERT OR IGNORE INTO mining_credits(mine_request_id,user_id,cycle_number,amount) VALUES(?,?,?,?)", (rig['id'], rig['user_id'], cycle, daily))
+                if cur.rowcount:
+                    conn.execute("UPDATE users SET balance=balance+? WHERE id=?", (daily, rig['user_id']))
+                    conn.execute("INSERT INTO transactions(user_id,kind,amount,status) VALUES(?,?,?,'Completed')", (rig['user_id'], 'Daily mining income · cycle ' + str(cycle), daily))
+                    reserve -= daily
+                    credited += 1
+                completed = cycle
+                conn.execute("UPDATE mine_requests SET last_credit_at=? WHERE id=?", ((start+timedelta(days=completed)).strftime('%Y-%m-%d %H:%M:%S'), rig['id']))
+        conn.execute("UPDATE platform_reserve SET available=? WHERE id=1", (reserve,))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+    return credited
+
+
 def login_required(fn):
     @wraps(fn)
     def wrapped(*args, **kwargs):
@@ -159,6 +224,16 @@ def login_required(fn):
             return redirect(url_for("register"))
         return fn(*args, **kwargs)
     return wrapped
+
+@app.route("/internal/daily-earnings", methods=["POST", "GET"])
+def internal_daily_earnings():
+    secret = os.environ.get("DAILY_EARNINGS_SECRET", "")
+    supplied = request.headers.get("X-Cron-Secret", "") or request.args.get("key", "")
+    if not secret or not hmac.compare_digest(secret, supplied):
+        return jsonify({"ok": False, "error": "unauthorized"}), 401
+    count = process_daily_earnings()
+    return jsonify({"ok": True, "credits_processed": count})
+
 
 @app.route("/")
 def index():
@@ -272,8 +347,7 @@ def mine(product_id):
     if amount < product["minimum"] or amount > product["maximum"]:
         flash("Enter an amount within this mining rig's UGX range.")
         return redirect(url_for("market"))
-    # Purchase is charged immediately and atomically. No automatic mining
-    # earnings are ever credited; real credits require verified pool settlement.
+    # Purchase is charged immediately and atomically; daily credits draw only from funded reserve.
     scenario = round(amount * float(product["daily_rate"]) / 100, 2)
     conn = db()
     try:
@@ -285,14 +359,14 @@ def mine(product_id):
             flash("INSUFFICIENT FUNDS")
             return redirect(url_for("market"))
         conn.execute("INSERT INTO mine_requests(user_id,product_id,product_name,amount,status,daily_scenario) VALUES(?,?,?,?,?,?)",
-                     (session["user_id"], product_id, product["name"], amount, "Purchased · awaiting verified pool activation", scenario))
+                     (session["user_id"], product_id, product["name"], amount, "Purchased · daily cycle active", scenario))
         conn.execute("INSERT INTO transactions(user_id,kind,amount,status) VALUES(?,?,?,'Completed')",
                      (session["user_id"], "Mining rig purchase · " + product["name"], amount))
         conn.commit()
     except Exception:
         conn.rollback()
         raise
-    flash("Purchase successful. The purchase amount has been deducted from your balance. No mining earnings will be auto-credited; verified pool settlement is required.")
+    flash("Purchase successful. Your 24-hour daily income cycle has started. Withdrawable credits are paid only when the platform reserve is funded.")
     return redirect(url_for("orders"))
 
 @app.route("/chats", methods=["GET", "POST"])
@@ -564,7 +638,17 @@ def admin_dashboard():
         action = request.form.get("action")
         uid = request.form.get("user_id", type=int)
         txid = request.form.get("transaction_id", type=int)
-        if action == "adjust_balance" and uid:
+        if action == "fund_reserve":
+            try:
+                funding = float(request.form.get("reserve_amount", "0"))
+                if funding <= 0 or funding > 1e12:
+                    raise ValueError()
+                conn = db(); conn.execute("BEGIN IMMEDIATE")
+                conn.execute("UPDATE platform_reserve SET available=available+? WHERE id=1", (funding,))
+                conn.commit(); flash(f"Payout reserve funded by UGX {funding:,.0f}.")
+            except (TypeError, ValueError):
+                flash("Enter a valid positive reserve funding amount.")
+        elif action == "adjust_balance" and uid:
             try:
                 new_balance = float(request.form.get("new_balance", ""))
                 if new_balance < 0 or new_balance > 1e12:
@@ -644,6 +728,7 @@ def admin_dashboard():
         users = db().execute("SELECT u.id,u.full_name,u.phone,u.balance,u.created_at,u.is_blocked,u.referral_code,u.referred_by,ref.referral_code AS invited_by_code FROM users u LEFT JOIN users ref ON ref.id=u.referred_by WHERE u.full_name LIKE ? OR u.phone LIKE ? ORDER BY u.id DESC", (f"%{search}%", f"%{search}%")).fetchall()
     else:
         users = db().execute("SELECT u.id,u.full_name,u.phone,u.balance,u.created_at,u.is_blocked,u.referral_code,u.referred_by,ref.referral_code AS invited_by_code FROM users u LEFT JOIN users ref ON ref.id=u.referred_by ORDER BY u.id DESC").fetchall()
+    reserve = db().execute("SELECT available FROM platform_reserve WHERE id=1").fetchone()[0]
     stats = {
         "users": db().execute("SELECT COUNT(*) FROM users").fetchone()[0],
         "active": db().execute("SELECT COUNT(*) FROM users WHERE is_blocked=0").fetchone()[0],
@@ -657,7 +742,7 @@ def admin_dashboard():
         (SELECT created_at FROM support_messages m WHERE m.user_id=u.id ORDER BY m.id DESC LIMIT 1) AS last_time
         FROM users u WHERE EXISTS (SELECT 1 FROM support_messages m WHERE m.user_id=u.id)
         ORDER BY (SELECT MAX(id) FROM support_messages m WHERE m.user_id=u.id) DESC LIMIT 30""").fetchall()
-    return render_template("admin_panel.html", users=users, deposits=deposits, withdrawals=withdrawals, stats=stats, search=search, support_threads=support_threads)
+    return render_template("admin_panel.html", users=users, deposits=deposits, withdrawals=withdrawals, stats=stats, search=search, support_threads=support_threads, reserve=reserve)
 
 @app.route("/admin/user/<int:user_id>")
 @admin_required
@@ -676,6 +761,7 @@ def admin_logout():
     return redirect(url_for("account"))
 
 init_db()
+ensure_earnings_schema()
 try:
     with sqlite3.connect(DB) as _check:
         _users = _check.execute("SELECT COUNT(*) FROM users").fetchone()[0]

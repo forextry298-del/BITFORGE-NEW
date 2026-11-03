@@ -15,11 +15,11 @@
 
 <main class="wrap content home-content mining-dashboard">
   <section class="mining-dashboard-hero">
-    <div class="mining-dashboard-brand"><span class="dashboard-btc">₿</span><div><b>BITFORGE</b><small>BITCOIN MINING PLATFORM</small></div><span class="network-pill"><i></i> POOL STATUS</span></div>
-    <div class="dashboard-hero-copy"><span class="dashboard-eyebrow">MINING CONTROL CENTER</span><h1>Power your<br>Bitcoin mining.</h1><p>Choose a mining rig, review its terms and monitor verified pool activity.</p><a href="{{ url_for('market') }}">Explore mining rigs <span>→</span></a></div>
+    <div class="mining-dashboard-brand"><span class="dashboard-btc">₿</span><div><b>BITFORGE</b><small>BITCOIN MINING PLATFORM</small></div><span class="network-pill"><i></i> 24H CYCLE</span></div>
+    <div class="dashboard-hero-copy"><span class="dashboard-eyebrow">MINING CONTROL CENTER</span><h1>Power your<br>Bitcoin mining.</h1><p>Choose a rig and monitor your daily 24-hour income cycle.</p><a href="{{ url_for('market') }}">Explore mining rigs <span>→</span></a></div>
     <img class="dashboard-hero-image" src="{{ url_for('static',filename='images/bitcoin_mining_robot.jpg') }}" alt="Illustrative Bitcoin mining equipment">
     <div class="dashboard-hero-shade"></div>
-    <div class="dashboard-hero-status"><span class="status-dot"></span> Pool connection required for verified earnings</div>
+    <div class="dashboard-hero-status"><span class="status-dot"></span> Daily income cycle active for eligible rigs</div>
   </section>
 
   {% if is_admin %}
@@ -61,7 +61,7 @@
       <p class="empty-activity">Your recent account activity will appear here.</p>
     {% endfor %}
   </section>
-  <section class="dashboard-midnight-note"><b>Deposit funds and choose a mining area</b><p>Verified mining-pool earnings, if available, are credited at 00:00 (midnight) after settlement confirmation. No live mining yield is displayed until a pool is connected.</p></section>
+  <section class="dashboard-midnight-note"><b>Deposit funds and choose a mining area</b><p>Daily income is calculated every 24 hours and credited to the withdrawable wallet only when the platform payout reserve has sufficient funds.</p></section>
 </main>
 {% include "nav.html" %}
 

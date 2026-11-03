@@ -3,11 +3,11 @@
 <main class="wrap content mining-orders-page"><div class="page-kicker">BITFORGE • MINING RECORDS</div><h1 class="page-title">My Mining Rigs</h1>
 <section class="orders-list">{% for r in rigs %}<article class="orders-record mining-live-card">
 <img class="orders-rig-image" src="{{ url_for('static', filename='images/' + (rig_images.get(r.product_id, 'mining_rig_robot.jpg'))) }}" alt="{{ r.product_name }}">
-<div class="orders-record-main"><b>{{ r.product_name }}</b><span class="mine-status">{{ r.status }}</span><small>Purchase amount · <strong>UGX {{ "{:,.0f}".format(r.amount) }}</strong></small><small>Daily income estimate · UGX {{ "{:,.0f}".format(r.daily_scenario or 0) }}</small><small class="cycle-timer" data-created="{{ r.created_at }}">{{ 4549 }} days 23:59:59</small></div>
+<div class="orders-record-main"><b>{{ r.product_name }}</b><span class="mine-status">{{ r.status }}</span><small>Purchase amount · <strong>UGX {{ "{:,.0f}".format(r.amount) }}</strong></small><small>Daily income estimate · UGX {{ "{:,.0f}".format(r.daily_scenario or 0) }}</small><small class="cycle-timer" data-created="{{ r.created_at }}">{{ 2458 }} days 23:59:59</small></div>
 </article>{% else %}<div class="orders-empty"><span>₿</span><b>No purchased mining rigs yet</b><p>Completed purchases will appear here.</p><a href="{{ url_for('market') }}">Explore mining rigs →</a></div>{% endfor %}</section></main>{% include "nav.html" %}
 <script>
 (()=>{
- const TERM_SECONDS=4549*86400;
+ const TERM_SECONDS=2458*86400;
  const fmt=n=>{n=Math.max(0,Math.floor(n));const d=Math.floor(n/86400),h=Math.floor(n%86400/3600),m=Math.floor(n%3600/60),s=n%60;return `${d} days ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`};
  document.querySelectorAll('.cycle-timer').forEach(el=>{
   const raw=el.dataset.created;

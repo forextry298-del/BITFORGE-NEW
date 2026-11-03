@@ -4,7 +4,7 @@
 {% block body %}
 <header class="top mining-top"><a class="brand" href="{{ url_for('home') }}"><span class="logo">₿</span>BitForge Mining</a><a href="{{ url_for('account') }}" aria-label="Account menu">☰</a></header>
 <main class="wrap content market-page mining-page">
-  <section class="mining-hero"><div class="btc-mark">₿</div><div><span class="mining-kicker">BITFORGE HASH POWER</span><h1>Bitcoin Mining Rigs</h1><p>Explore mining hardware. Live mining activation requires a verified pool connection.</p></div></section>
+  <section class="mining-hero"><div class="btc-mark">₿</div><div><span class="mining-kicker">BITFORGE HASH POWER</span><h1>Bitcoin Mining Rigs</h1><p>Explore mining hardware. Daily income is processed in 24-hour cycles.</p></div></section>
   {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash mining-flash {% if 'success' in m|lower or 'successful' in m|lower or 'approved' in m|lower or 'credited' in m|lower %}flash-success{% elif 'failed' in m|lower or 'incorrect' in m|lower or 'insufficient' in m|lower or 'error' in m|lower or 'rejected' in m|lower or 'already registered' in m|lower %}flash-error{% endif %}">{{ m }}</div>{% endfor %}{% endwith %}
   <section class="mining-balance"><div><small>AVAILABLE WALLET BALANCE</small><strong>UGX {{ "{:,.0f}".format(current_user_balance) }}</strong></div><a href="{{ url_for('wallet') }}">Wallet ↗</a></section>
   <div class="market-tools">
@@ -20,8 +20,8 @@
         <h2>{{ p.name }}</h2><p class="market-description">{{ p.description }}</p>
         <p>Activation range · <strong>UGX {{ "{:,.0f}".format(p.minimum) }}–{{ "{:,.0f}".format(p.maximum) }}</strong></p>
         <p>Daily scenario rate · <strong>{{ p.daily_rate }}%</strong></p>
-        <p>Actual mining payout · <strong>Verified pool earnings only</strong></p>
-        <p>Mining period · <strong>4549 days</strong></p>
+        <p>Daily income · <strong>Credited to withdrawable wallet when reserve is funded</strong></p>
+        <p>Mining period · <strong>2458 days</strong></p>
         <p>Wallet check · <strong>Required before request</strong></p>
         <div class="market-product-bottom mining-product-bottom">
           <form method="post" action="{{ url_for('mine',product_id=p.id) }}" class="mine-form" data-rate="{{ p.daily_rate }}">
