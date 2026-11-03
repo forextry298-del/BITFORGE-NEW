@@ -79,15 +79,15 @@
     <div class="wallet-title"><span>INVESTMENT WALLET</span><a href="{{ url_for('wallet') }}">Details →</a></div>
     <p>Total Balance</p>
     <h2>UGX {{ "{:,.0f}".format(user.balance) }}</h2>
-    <div class="wallet-actions"><a href="{{ url_for('deposit') }}">↓　Deposit</a><a href="{{ url_for('withdraw') }}">↑　Withdraw</a></div>
+    <div class="wallet-actions"><a href="{{ url_for('deposit') }}">{{ icon("deposit",21) }}<span>Deposit</span></a><a href="{{ url_for('withdraw') }}">{{ icon("withdraw",21) }}<span>Withdraw</span></a></div>
   </section>
 
   <section class="section-heading quick-heading"><div><h2>Quick access</h2><p>Manage your BitForge account</p></div></section>
   <section class="quick-links">
-    <a href="{{ url_for('wallet') }}"><span>▣</span><small>Wallet</small></a>
-    <a href="{{ url_for('deposit') }}"><span>＋</span><small>Deposit</small></a>
-    <a href="{{ url_for('withdraw') }}"><span>↗</span><small>Withdraw</small></a>
-    <a href="{{ url_for('orders') }}"><span>▤</span><small>Orders</small></a>
+    <a href="{{ url_for('wallet') }}">{{ icon("wallet",27) }}<small>Wallet</small></a>
+    <a href="{{ url_for('deposit') }}">{{ icon("deposit",27) }}<small>Deposit</small></a>
+    <a href="{{ url_for('withdraw') }}">{{ icon("withdraw",27) }}<small>Withdraw</small></a>
+    <a href="{{ url_for('orders') }}">{{ icon("orders",27) }}<small>Orders</small></a>
   </section>
 
   <section class="section-heading activity-heading"><div><h2>Recent activity</h2><p>Your latest account requests</p></div><a href="{{ url_for('orders') }}">See all →</a></section>

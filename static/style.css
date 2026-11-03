@@ -73,7 +73,7 @@ body{font-size:16px}
 }
 @media(min-width:620px){.wrap{max-width:680px}.hero-slider{height:320px}}
 
-/* Deposit screen: mobile-first responsive layout */
+/* Deposit screen: mobile-first, fitted to the viewport without CSS zoom */
 .deposit-header{min-height:112px;background:var(--page);display:flex;align-items:flex-start;gap:18px;padding:28px max(22px,calc((100vw - 600px)/2)) 12px}
 .deposit-back{font-size:38px;line-height:1;color:var(--ink);font-weight:400;margin-top:5px;width:42px;flex:0 0 42px}
 .deposit-header h1{font-size:clamp(30px,7vw,38px);line-height:1.15;letter-spacing:-1.1px;margin:0 0 10px;font-weight:850}
@@ -113,3 +113,59 @@ body{font-size:16px}
 .deposit-notice{text-align:center;font-size:10px;color:#8a92a0;line-height:1.45;margin:10px 5px 0}
 @media(max-width:370px){.deposit-page{padding-left:14px;padding-right:14px}.deposit-header{padding-left:16px;padding-right:16px;gap:12px}.payment-option{gap:10px;padding:13px}.provider-logo{width:48px;height:48px;flex-basis:48px}.provider-copy strong{font-size:15px}.provider-copy small{font-size:11px}.deposit-hint{font-size:12px}}
 @media(min-width:620px){.deposit-header{max-width:620px;margin:auto;padding-left:20px;padding-right:20px}}
+
+/* Compact deposit layout: reference-inspired sizing without browser zoom. */
+.deposit-header{min-height:88px;padding-top:17px;padding-bottom:7px;gap:13px}
+.deposit-header h1{font-size:30px;margin-bottom:6px}
+.deposit-back{font-size:32px;width:35px;flex-basis:35px}
+.deposit-brand-mark{width:25px;height:25px;font-size:16px}
+.deposit-brand strong{font-size:17px}
+.deposit-page{max-width:600px;padding:8px 18px 20px}
+.deposit-section{margin:7px 0 19px}
+.deposit-section h2{font-size:21px;margin-bottom:11px}
+.amount-entry{height:62px;border-radius:14px;padding:0 13px}
+.amount-entry input{font-size:25px!important}
+.currency-chip{padding:7px 10px;font-size:13px}
+.deposit-hint{font-size:13px;margin-top:10px}
+.payment-option{min-height:78px;padding:11px 13px;margin-bottom:11px;border-radius:14px;gap:12px}
+.provider-logo{width:46px;height:46px;flex-basis:46px;border-radius:12px}
+.provider-copy strong{font-size:16px}
+.provider-copy small{font-size:12px}
+.radio-visual{width:23px;height:23px;flex-basis:23px}
+.payment-option.selected .radio-visual:after{width:13px;height:13px}
+.deposit-summary{margin:14px 0 12px;padding:5px 13px;border-radius:14px}
+.deposit-summary>div{min-height:37px;font-size:14px}
+.deposit-summary .summary-total{font-size:16px}
+.deposit-submit{min-height:52px;font-size:17px;padding:9px 14px}
+.deposit-terms{font-size:11px;margin-top:9px}
+.deposit-notice{font-size:9px;margin-top:6px}
+/* Compact horizontal product cards, matching the supplied marketplace reference. */
+.market-title{display:flex;align-items:center;gap:10px;font-size:21px;margin:5px 0 13px}
+.market-title .ui-icon{color:#647184}
+.market-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0 0 13px}
+.market-tool{min-height:84px;padding:10px 5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:var(--surface);border:1px solid var(--line);border-radius:14px;color:#c66a2b;box-shadow:0 2px 8px #1720330a}
+.market-tool b{font-size:11px;color:var(--ink);text-align:center}
+.market-assurances{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:9px;margin-bottom:13px}
+.market-assurances>div{display:flex;align-items:center;gap:8px;min-width:0;color:#b96a32}
+.market-assurances span{display:flex;flex-direction:column;min-width:0}
+.market-assurances b{font-size:11px;color:var(--ink)}
+.market-assurances small{font-size:9px;color:var(--muted);line-height:1.25}
+.tabs{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;margin:0 0 3px;scrollbar-width:none}
+.tabs a{flex:0 0 auto;border:1px solid #dfe2e8;border-radius:22px;padding:6px 12px;background:#fff;font-size:12px;color:var(--ink);white-space:nowrap}
+.tabs a.active{background:linear-gradient(100deg,#159bc6,#7046e8);color:#fff;border-color:transparent}
+.market-products{display:grid;gap:11px}
+.market-product{display:grid;grid-template-columns:34% minmax(0,1fr);gap:11px;padding:10px;background:#fff;border:1px solid var(--line);border-radius:17px;box-shadow:0 3px 10px #1720330a;min-width:0}
+.market-product-image{position:relative;display:block;min-width:0;align-self:stretch;min-height:148px;background:#f0f2f5;border-radius:12px;overflow:hidden}
+.market-product-image img{display:block;width:100%;height:100%;min-height:148px;object-fit:cover}
+.market-product-image span{position:absolute;top:7px;left:7px;padding:4px 8px;border-radius:15px;background:#e8f4fb;color:#28617e;font-size:10px;font-weight:750}
+.market-product-info{min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.market-product-info h2{font-size:15px;line-height:1.2;margin:2px 0 4px;letter-spacing:-.2px}
+.market-product-info p{font-size:11px;line-height:1.35;margin:3px 0;color:#30394a}
+.market-product-info .market-description{color:var(--muted)}
+.market-product-info p strong{font-weight:800;color:var(--ink)}
+.market-product-bottom{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;margin-top:auto;padding-top:6px}
+.market-product-bottom small{font-size:10px;color:var(--muted);line-height:1.2}
+.market-product-bottom a{flex:0 0 auto;padding:7px 13px;border-radius:22px;background:linear-gradient(100deg,#2464ed,#8c16ed);color:#fff;font-size:11px;font-weight:800}
+.wallet-actions a{display:flex;align-items:center;justify-content:center;gap:8px}
+.quick-links .ui-icon{color:#6755c7}
+@media(max-width:380px){.deposit-page{padding-left:13px;padding-right:13px}.market-product{grid-template-columns:32% minmax(0,1fr);gap:9px;padding:8px}.market-product-image,.market-product-image img{min-height:138px}.market-product-info h2{font-size:14px}.market-product-info p{font-size:10px}.market-product-bottom a{padding:6px 10px}}

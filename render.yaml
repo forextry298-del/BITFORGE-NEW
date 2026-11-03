@@ -7,9 +7,3 @@ services:
     envVars:
       - key: SECRET_KEY
         generateValue: true
-      - key: BITFORGE_DATA_DIR
-        value: /var/data
-    disk:
-      name: bitforge-data
-      mountPath: /var/data
-      sizeGB: 1

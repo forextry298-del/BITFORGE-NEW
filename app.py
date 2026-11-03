@@ -74,6 +74,7 @@ def init_db():
             balance REAL NOT NULL DEFAULT 0,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""")
+        # Upgrade older account tables safely; existing users and IDs remain intact.
         columns = {row[1] for row in conn.execute("PRAGMA table_info(users)")}
         if "country" not in columns:
             conn.execute("ALTER TABLE users ADD COLUMN country TEXT NOT NULL DEFAULT 'Uganda'")
@@ -129,9 +130,10 @@ def register():
                 if existing:
                     flash("That phone number is already registered. Please sign in.")
                     return render_template("register.html")
+                country = request.form.get("country", "Uganda").strip() or "Uganda"
                 db().execute(
                     "INSERT INTO users(full_name, country, phone, password_hash, created_at) VALUES(?,?,?,?,CURRENT_TIMESTAMP)",
-                    (name, request.form.get("country", "Uganda").strip(), phone, generate_password_hash(password))
+                    (name, country, phone, generate_password_hash(password))
                 )
                 db().commit()
                 flash("Registration successful. Please sign in.")
