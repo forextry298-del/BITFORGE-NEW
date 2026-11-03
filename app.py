@@ -233,7 +233,9 @@ def home():
     user = db().execute("SELECT * FROM users WHERE id=?", (session["user_id"],)).fetchone()
     txns = db().execute("SELECT * FROM transactions WHERE user_id=? ORDER BY id DESC LIMIT 5",
                         (session["user_id"],)).fetchall()
-    return render_template("home.html", user=user, txns=txns, products=PRODUCTS)
+    admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0757837051"))
+    is_admin = bool(user and user["phone"] == admin_phone)
+    return render_template("home.html", user=user, txns=txns, products=PRODUCTS, is_admin=is_admin)
 
 @app.route("/market")
 @login_required
@@ -445,8 +447,10 @@ def account():
     invite_count = db().execute("SELECT COUNT(*) FROM users WHERE referred_by=?", (session["user_id"],)).fetchone()[0]
     commission_total = db().execute("SELECT COALESCE(SUM(commission_amount),0) FROM referral_commissions WHERE referrer_id=?", (session["user_id"],)).fetchone()[0]
     invite_url = request.url_root.rstrip("/") + url_for("register", ref=user["referral_code"])
+    admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0757837051"))
+    is_admin = bool(user and user["phone"] == admin_phone)
     return render_template("account.html", user=user, invite_count=invite_count,
-                           commission_total=commission_total, invite_url=invite_url)
+                           commission_total=commission_total, invite_url=invite_url, is_admin=is_admin)
 
 @app.route("/invite")
 @login_required
@@ -506,21 +510,16 @@ def admin_required(fn):
     return wrapped
 
 @app.route("/admin", methods=["GET", "POST"])
+@login_required
 def admin_login():
-    if request.method == "POST":
-        user = db().execute("SELECT * FROM users WHERE id=?", (session.get("user_id", -1),)).fetchone()
-        key = os.environ.get("BITFORGE_ADMIN_PANEL_KEY", "")
-        supplied = request.form.get("admin_key", "")
-        admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0757837051"))
-        if user and user["phone"] == admin_phone and key and secrets.compare_digest(supplied, key):
-            session["bitforge_admin_verified"] = True
-            return redirect(url_for("admin_dashboard"))
-        flash("Admin access denied. Sign in with the designated admin account and configured admin key.")
-    if session.get("user_id"):
-        u = db().execute("SELECT phone FROM users WHERE id=?", (session["user_id"],)).fetchone()
-        if u and u["phone"] == normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0757837051")):
-            return render_template("admin_panel_login.html")
-    return redirect(url_for("login"))
+    user = db().execute("SELECT phone FROM users WHERE id=?", (session.get("user_id", -1),)).fetchone()
+    admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0757837051"))
+    if not user or user["phone"] != admin_phone:
+        flash("Admin access denied.")
+        return redirect(url_for("home"))
+    # The designated administrator must already be authenticated with their account password.
+    session["bitforge_admin_verified"] = True
+    return redirect(url_for("admin_dashboard"))
 
 @app.route("/admin/panel", methods=["GET", "POST"])
 @admin_required
@@ -541,6 +540,22 @@ def admin_dashboard():
                 db().execute("UPDATE users SET password_hash=? WHERE id=?", (generate_password_hash(new_password), uid))
                 db().commit(); flash("Password reset.")
             else: flash("New password must contain at least 8 characters.")
+        elif action == "approve_deposit" and txid:
+            conn = db(); conn.execute("BEGIN IMMEDIATE")
+            tx = conn.execute("SELECT * FROM transactions WHERE id=? AND kind LIKE 'Deposit%' AND status='Pending verification'", (txid,)).fetchone()
+            if tx:
+                conn.execute("UPDATE users SET balance=balance+? WHERE id=?", (tx["amount"], tx["user_id"]))
+                conn.execute("UPDATE transactions SET status='Completed' WHERE id=?", (txid,))
+                ref = conn.execute("SELECT referred_by FROM users WHERE id=?", (tx["user_id"],)).fetchone()
+                if ref and ref["referred_by"]:
+                    commission = round(float(tx["amount"]) * 0.25, 2)
+                    cur = conn.execute("INSERT OR IGNORE INTO referral_commissions(referrer_id,referred_user_id,deposit_transaction_id,deposit_amount,commission_amount) VALUES(?,?,?,?,?)", (ref["referred_by"], tx["user_id"], txid, tx["amount"], commission))
+                    if cur.rowcount:
+                        conn.execute("UPDATE users SET balance=balance+? WHERE id=?", (commission, ref["referred_by"]))
+                        conn.execute("INSERT INTO transactions(user_id,kind,amount,status) VALUES(?,?,?,'Completed')", (ref["referred_by"], "Level 1 referral commission (25%)", commission))
+                conn.commit(); flash("Deposit verified; user balance and any eligible referral commission credited.")
+            else:
+                conn.rollback(); flash("Pending deposit not found or already processed.")
         elif action in ("approve_withdrawal", "reject_withdrawal") and txid:
             conn = db(); conn.execute("BEGIN IMMEDIATE")
             tx = conn.execute("SELECT * FROM transactions WHERE id=? AND kind='Withdrawal' AND status='Pending'", (txid,)).fetchone()
@@ -556,10 +571,31 @@ def admin_dashboard():
             else:
                 conn.rollback(); flash("Pending withdrawal not found.")
         return redirect(url_for("admin_dashboard"))
-    users = db().execute("SELECT id,full_name,phone,balance,created_at,is_blocked FROM users ORDER BY id DESC").fetchall()
+    search = request.args.get("q", "").strip()
+    if search:
+        users = db().execute("SELECT id,full_name,phone,balance,created_at,is_blocked FROM users WHERE full_name LIKE ? OR phone LIKE ? ORDER BY id DESC", (f"%{search}%", f"%{search}%")).fetchall()
+    else:
+        users = db().execute("SELECT id,full_name,phone,balance,created_at,is_blocked FROM users ORDER BY id DESC").fetchall()
+    stats = {
+        "users": db().execute("SELECT COUNT(*) FROM users").fetchone()[0],
+        "active": db().execute("SELECT COUNT(*) FROM users WHERE is_blocked=0").fetchone()[0],
+        "blocked": db().execute("SELECT COUNT(*) FROM users WHERE is_blocked=1").fetchone()[0],
+        "balance": db().execute("SELECT COALESCE(SUM(balance),0) FROM users").fetchone()[0],
+    }
     deposits = db().execute("SELECT t.*,u.full_name,u.phone FROM transactions t JOIN users u ON u.id=t.user_id WHERE t.kind LIKE 'Deposit%' AND t.status='Pending verification' ORDER BY t.id").fetchall()
     withdrawals = db().execute("SELECT t.*,u.full_name,u.phone FROM transactions t JOIN users u ON u.id=t.user_id WHERE t.kind='Withdrawal' AND t.status='Pending' ORDER BY t.id").fetchall()
-    return render_template("admin_panel.html", users=users, deposits=deposits, withdrawals=withdrawals)
+    return render_template("admin_panel.html", users=users, deposits=deposits, withdrawals=withdrawals, stats=stats, search=search)
+
+@app.route("/admin/user/<int:user_id>")
+@admin_required
+def admin_user_detail(user_id):
+    member = db().execute("SELECT id,full_name,phone,balance,created_at,is_blocked FROM users WHERE id=?", (user_id,)).fetchone()
+    if not member:
+        flash("User not found.")
+        return redirect(url_for("admin_dashboard"))
+    transactions = db().execute("SELECT kind,amount,status,created_at FROM transactions WHERE user_id=? ORDER BY id DESC LIMIT 50", (user_id,)).fetchall()
+    mining_orders = db().execute("SELECT product_name,amount,status,created_at FROM mine_requests WHERE user_id=? ORDER BY id DESC", (user_id,)).fetchall()
+    return render_template("admin_user_detail.html", member=member, transactions=transactions, mining_orders=mining_orders)
 
 @app.route("/admin/logout")
 def admin_logout():
