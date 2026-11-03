@@ -405,3 +405,20 @@ body{background:var(--page);color:var(--ink);font-size:15px}
 
 /* Responsive mobile layout; no page-level zoom or scaling. */
 .admin-dashboard-page{max-width:900px;padding-bottom:30px}.admin-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0 22px}.admin-stat-grid .card{padding:14px;min-width:0}.admin-stat-grid small,.admin-stat-grid strong{display:block}.admin-stat-grid small{font-size:11px;color:var(--muted)}.admin-stat-grid strong{font-size:21px;margin-top:5px;overflow-wrap:anywhere}.admin-dashboard-page>h2{font-size:19px;margin:22px 0 10px}.admin-action-card,.admin-user{padding:14px;margin:9px 0}.admin-action-card p,.admin-user p{font-size:12px;color:var(--muted);overflow-wrap:anywhere}.admin-user-heading,.admin-user-actions{display:flex;align-items:center;justify-content:space-between;gap:9px}.admin-user-heading span{font-size:10px;color:var(--muted)}.admin-user-actions{justify-content:flex-start;flex-wrap:wrap;margin:10px 0}.admin-user details{border-top:1px solid var(--line);padding-top:10px}.admin-user summary{font-size:12px;font-weight:700;cursor:pointer}.admin-reset-form,.admin-search{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.admin-reset-form input,.admin-search input{flex:1;min-width:170px;padding:11px;border:1px solid var(--line);border-radius:12px;font:inherit}.admin-blocked{color:#b42318}@media(max-width:420px){.admin-stat-grid strong{font-size:18px}.admin-user-actions .btn{font-size:11px;padding:9px 11px}}
+
+
+/* Mobile-first admin and deposit form refinements */
+.deposit-phone-label{display:block;font-weight:700;margin:16px 0 7px;color:#202b3d}
+.deposit-phone-input{display:block;width:100%;box-sizing:border-box;padding:15px 16px;border:1px solid #d9dce3;border-radius:14px;background:#fff;font-size:16px;color:#202b3d}
+.admin-dashboard-page{width:min(100% - 28px,900px);margin-inline:auto;overflow-wrap:anywhere}
+.admin-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.admin-stat-grid>.card,.admin-action-card,.admin-user{min-width:0;box-sizing:border-box}
+.admin-action-card form,.admin-user-actions,.admin-reset-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.admin-action-card .btn,.admin-user .btn{max-width:100%;white-space:normal}
+.admin-search{display:flex;gap:8px;width:100%;margin:12px 0}
+.admin-search input{flex:1;min-width:0}
+.mining-live-card{display:flex;gap:14px;align-items:flex-start}
+.orders-rig-image{width:104px;height:124px;object-fit:cover;border-radius:14px;flex:0 0 104px}
+.mine-status{display:inline-block;margin:5px 0;padding:4px 9px;border-radius:20px;background:#fff2d8;color:#8b5b13;font-size:12px;font-weight:700}
+.cycle-timer{font-weight:800;color:#9a671e;font-variant-numeric:tabular-nums}
+@media(max-width:480px){.admin-dashboard-page{width:calc(100% - 22px);padding-left:0;padding-right:0}.admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-user-actions .btn,.admin-action-card .btn{font-size:13px;padding:10px}.admin-search{flex-direction:column}.mining-live-card{gap:10px}.orders-rig-image{width:82px;height:100px;flex-basis:82px}.orders-record-main{min-width:0}.orders-record-main small{overflow-wrap:anywhere}}

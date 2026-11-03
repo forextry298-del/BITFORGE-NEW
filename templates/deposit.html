@@ -11,6 +11,8 @@
     <section class="deposit-section agent-step" id="amountStep">
       <h2>₿ Add funds to your mining wallet</h2>
       <div class="amount-entry"><span class="currency-mark">UGX</span><input id="depositAmount" name="amount" type="number" inputmode="numeric" min="10000" max="100000000" step="1000" placeholder="Enter amount" required aria-label="Deposit Amount"><span class="currency-chip">UGX</span></div>
+      <label class="deposit-phone-label" for="payerPhone">Your mobile money number</label>
+      <input class="deposit-phone-input" id="payerPhone" name="payer_phone" type="tel" inputmode="tel" placeholder="e.g. 075XXXXXXXX" required>
       <p class="deposit-hint">Minimum deposit: UGX 10,000 <span>•</span> Agent-assisted deposit</p>
       <div class="deposit-summary agent-summary" aria-live="polite"><div><span>Deposit amount</span><strong id="summaryAmount">UGX 0</strong></div><div class="summary-total"><span>Total to send</span><strong id="summaryTotal">UGX 0</strong></div></div>
       <button class="deposit-submit" id="continueButton" type="button">CONTINUE</button>
@@ -77,6 +79,7 @@
   amount.addEventListener('input',updateAmount); updateAmount();
   continueButton.addEventListener('click',()=>{
     if(!amount.value || Number(amount.value)<10000 || Number(amount.value)>100000000){amount.setCustomValidity('Enter an amount from UGX 10,000 to UGX 100,000,000.');amount.reportValidity();return}
+    const payer=document.getElementById('payerPhone'); if(!payer.value.trim()){payer.reportValidity();return}
     amount.setCustomValidity(''); amountStep.hidden=true; agentStep.hidden=false;
     searching.hidden=false; agentList.hidden=true;
     window.setTimeout(()=>{searching.hidden=true;agentList.hidden=false},650);

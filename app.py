@@ -125,8 +125,17 @@ def init_db():
             product_name TEXT NOT NULL,
             amount REAL NOT NULL,
             status TEXT NOT NULL DEFAULT 'Pending review',
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            daily_scenario REAL NOT NULL DEFAULT 0,
+            pool_activated_at TEXT,
+            last_credit_at TEXT
         )""")
+        mine_columns = {row[1] for row in conn.execute("PRAGMA table_info(mine_requests)")}
+        for col, definition in (("daily_scenario", "REAL NOT NULL DEFAULT 0"), ("pool_activated_at", "TEXT"), ("last_credit_at", "TEXT")):
+            if col not in mine_columns:
+                conn.execute(f"ALTER TABLE mine_requests ADD COLUMN {col} {definition}")
+        if "payer_phone" not in tx_columns:
+            conn.execute("ALTER TABLE transactions ADD COLUMN payer_phone TEXT")
         # Private user-to-admin support messages and the shared member community.
         conn.execute("""CREATE TABLE IF NOT EXISTS support_messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -263,16 +272,18 @@ def mine(product_id):
     if amount < product["minimum"] or amount > product["maximum"]:
         flash("Enter an amount within this mining rig's UGX range.")
         return redirect(url_for("market"))
+    # Record a transparent activation request. Do not debit the wallet or
+    # fabricate daily mining credits until a real pool and settlement feed exist.
     user = db().execute("SELECT balance FROM users WHERE id=?", (session["user_id"],)).fetchone()
-    balance = float(user["balance"] or 0) if user else 0
-    if balance < amount:
-        shortfall = amount - balance
+    if not user or float(user["balance"] or 0) < amount:
         flash("INSUFFICIENT FUNDS")
         return redirect(url_for("market"))
-    # Do not accept deposits or fabricate mining earnings. Activation is blocked
-    # until a real mining-pool API and verified payout wallet are configured.
-    flash("BALANCE CHECK PASSED, but mining is not connected to a verified pool yet. No funds were deducted and no earnings were credited.")
-    return redirect(url_for("market"))
+    scenario = round(amount * float(product["daily_rate"]) / 100, 2)
+    db().execute("INSERT INTO mine_requests(user_id,product_id,product_name,amount,status,daily_scenario) VALUES(?,?,?,?,?,?)",
+                 (session["user_id"], product_id, product["name"], amount, "Awaiting verified pool activation", scenario))
+    db().commit()
+    flash("Mining rig request created successfully. It is awaiting verified pool activation. No funds were deducted and the displayed daily figure is only an estimate; actual earnings require verified pool settlement.")
+    return redirect(url_for("orders"))
 
 @app.route("/chats", methods=["GET", "POST"])
 @login_required
@@ -379,7 +390,10 @@ def deposit():
             amount = 0
         agent_key = request.form.get("agent", "")
         agent = agents.get(agent_key)
-        if amount < 10000:
+        payer_phone = normalize_phone(request.form.get("payer_phone", ""))
+        if not payer_phone or len("".join(c for c in payer_phone if c.isdigit())) < 10:
+            flash("Enter the mobile money number you will deposit from.")
+        elif amount < 10000:
             flash("Minimum deposit is UGX 10,000.")
         elif amount > 100000000:
             flash("Please enter a valid deposit amount.")
@@ -389,8 +403,8 @@ def deposit():
             # This records a pending payment instruction only. Wallet funds are
             # credited after an administrator verifies the incoming transfer.
             method = f"Deposit · Agent · {agent['name']} · {agent['phone']}"
-            db().execute("INSERT INTO transactions(user_id,kind,amount,status) VALUES(?,?,?,?)",
-                         (session["user_id"], method, amount, "Pending verification"))
+            db().execute("INSERT INTO transactions(user_id,kind,amount,status,payer_phone) VALUES(?,?,?,?,?)",
+                         (session["user_id"], method, amount, "Pending verification", payer_phone))
             db().commit()
             flash(f"Deposit instruction saved for UGX {amount:,.0f}. Your wallet will be credited after the transfer to {agent['name']} is verified.")
             return redirect(url_for("orders"))
@@ -438,7 +452,8 @@ def withdraw():
 def orders():
     rigs = db().execute("SELECT * FROM mine_requests WHERE user_id=? ORDER BY id DESC",
                         (session["user_id"],)).fetchall()
-    return render_template("orders.html", rigs=rigs)
+    rig_images = {p["id"]: p["image"] for p in PRODUCTS}
+    return render_template("orders.html", rigs=rigs, rig_images=rig_images)
 
 @app.route("/account")
 @login_required
@@ -540,6 +555,14 @@ def admin_dashboard():
                 db().execute("UPDATE users SET password_hash=? WHERE id=?", (generate_password_hash(new_password), uid))
                 db().commit(); flash("Password reset.")
             else: flash("New password must contain at least 8 characters.")
+        elif action == "reject_deposit" and txid:
+            conn = db(); conn.execute("BEGIN IMMEDIATE")
+            tx = conn.execute("SELECT * FROM transactions WHERE id=? AND kind LIKE 'Deposit%' AND status='Pending verification'", (txid,)).fetchone()
+            if tx:
+                conn.execute("UPDATE transactions SET status='Rejected' WHERE id=?", (txid,))
+                conn.commit(); flash("Deposit request rejected. No wallet funds were added.")
+            else:
+                conn.rollback(); flash("Pending deposit not found or already processed.")
         elif action == "approve_deposit" and txid:
             conn = db(); conn.execute("BEGIN IMMEDIATE")
             tx = conn.execute("SELECT * FROM transactions WHERE id=? AND kind LIKE 'Deposit%' AND status='Pending verification'", (txid,)).fetchone()
