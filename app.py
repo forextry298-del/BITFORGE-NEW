@@ -101,6 +101,20 @@ def init_db():
             status TEXT NOT NULL DEFAULT 'Pending review',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""")
+        # Private user-to-admin support messages and the shared member community.
+        conn.execute("""CREATE TABLE IF NOT EXISTS support_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            sender TEXT NOT NULL CHECK(sender IN ('user','admin')),
+            message TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )""")
+        conn.execute("""CREATE TABLE IF NOT EXISTS community_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            message TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )""")
         conn.commit()
 
 def login_required(fn):
@@ -220,6 +234,89 @@ def mine(product_id):
     # until a real mining-pool API and verified payout wallet are configured.
     flash("BALANCE CHECK PASSED, but mining is not connected to a verified pool yet. No funds were deducted and no earnings were credited.")
     return redirect(url_for("market"))
+
+@app.route("/chats", methods=["GET", "POST"])
+@login_required
+def chats():
+    if request.method == "POST":
+        message = request.form.get("message", "").strip()
+        if not message:
+            flash("Write a message before sending.")
+        elif len(message) > 2000:
+            flash("Message is too long. Maximum is 2,000 characters.")
+        else:
+            db().execute("INSERT INTO support_messages(user_id,sender,message) VALUES(?,?,?)",
+                         (session["user_id"], "user", message))
+            db().commit()
+            flash("Your message has been sent to the support team.")
+            return redirect(url_for("chats"))
+    messages = db().execute("""SELECT sender,message,created_at FROM support_messages
+                              WHERE user_id=? ORDER BY id DESC LIMIT 100""",
+                            (session["user_id"],)).fetchall()
+    return render_template("chats.html", messages=list(reversed(messages)))
+
+@app.route("/community", methods=["GET", "POST"])
+@login_required
+def community():
+    if request.method == "POST":
+        message = request.form.get("message", "").strip()
+        if not message:
+            flash("Write a message before posting.")
+        elif len(message) > 1000:
+            flash("Community messages are limited to 1,000 characters.")
+        else:
+            db().execute("INSERT INTO community_messages(user_id,message) VALUES(?,?)",
+                         (session["user_id"], message))
+            db().commit()
+            return redirect(url_for("community"))
+    messages = db().execute("""SELECT c.message,c.created_at,u.full_name
+                              FROM community_messages c JOIN users u ON u.id=c.user_id
+                              ORDER BY c.id DESC LIMIT 100""").fetchall()
+    return render_template("community.html", messages=list(reversed(messages)))
+
+@app.route("/admin/chats", methods=["GET", "POST"])
+def admin_chats():
+    # Set BITFORGE_ADMIN_CHAT_KEY in Render before enabling the admin inbox.
+    expected = os.environ.get("BITFORGE_ADMIN_CHAT_KEY", "")
+    if not expected:
+        return "Admin chat is disabled: configure BITFORGE_ADMIN_CHAT_KEY first.", 503
+    if request.method == "POST" and request.form.get("admin_key"):
+        if request.form.get("admin_key") == expected:
+            session["bitforge_chat_admin"] = True
+            return redirect(url_for("admin_chats"))
+        flash("Invalid admin key.")
+    if not session.get("bitforge_chat_admin"):
+        return render_template("admin_chat_login.html")
+    if request.method == "POST":
+        try:
+            user_id = int(request.form.get("user_id", "0"))
+        except ValueError:
+            user_id = 0
+        message = request.form.get("message", "").strip()
+        if user_id and message and len(message) <= 2000:
+            exists = db().execute("SELECT id FROM users WHERE id=?", (user_id,)).fetchone()
+            if exists:
+                db().execute("INSERT INTO support_messages(user_id,sender,message) VALUES(?,?,?)",
+                             (user_id, "admin", message))
+                db().commit()
+                flash("Reply sent.")
+        return redirect(url_for("admin_chats"))
+    threads = db().execute("""SELECT u.id AS user_id,u.full_name,u.phone,
+                           MAX(m.id) AS last_id,MAX(m.created_at) AS last_time
+                           FROM users u JOIN support_messages m ON m.user_id=u.id
+                           GROUP BY u.id ORDER BY last_id DESC""").fetchall()
+    selected = request.args.get("user", type=int)
+    thread_messages = []
+    if selected:
+        thread_messages = db().execute("""SELECT sender,message,created_at FROM support_messages
+                                         WHERE user_id=? ORDER BY id""", (selected,)).fetchall()
+    return render_template("admin_chats.html", threads=threads, selected=selected,
+                           thread_messages=thread_messages)
+
+@app.route("/admin/chats/logout")
+def admin_chats_logout():
+    session.pop("bitforge_chat_admin", None)
+    return redirect(url_for("admin_chats"))
 
 @app.route("/wallet")
 @login_required
