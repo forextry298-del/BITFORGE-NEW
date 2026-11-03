@@ -1,44 +1,55 @@
 {% extends "base.html" %}
 {% from "icons.html" import icon %}
-{% block title %}Investment Products · BitForge{% endblock %}
+{% block title %}Bitcoin Mining · BitForge{% endblock %}
 {% block body %}
-<header class="top"><a class="brand" href="{{ url_for('home') }}"><span class="logo">B</span>BitForge</a><a href="{{ url_for('account') }}" aria-label="Account menu">☰</a></header>
-<main class="wrap content market-page">
-  <h1 class="market-title">{{ icon('search',22) }} Investment Products</h1>
-  {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}{% endwith %}
+<header class="top mining-top"><a class="brand" href="{{ url_for('home') }}"><span class="logo">₿</span>BitForge Mining</a><a href="{{ url_for('account') }}" aria-label="Account menu">☰</a></header>
+<main class="wrap content market-page mining-page">
+  <section class="mining-hero"><div class="btc-mark">₿</div><div><span class="mining-kicker">BITFORGE HASH POWER</span><h1>Bitcoin Mining Rigs</h1><p>Choose a mining simulator and check your available wallet balance.</p></div></section>
+  {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash mining-flash">{{ m }}</div>{% endfor %}{% endwith %}
+  <section class="mining-balance"><div><small>AVAILABLE WALLET BALANCE</small><strong>UGX {{ "{:,.0f}".format(current_user_balance) }}</strong></div><a href="{{ url_for('wallet') }}">Wallet ↗</a></section>
   <div class="market-tools">
-    <a class="market-tool" href="{{ url_for('market') }}">{{ icon('chart',27) }}<b>Browse Funds</b></a>
-    <a class="market-tool" href="{{ url_for('wallet') }}">{{ icon('briefcase',27) }}<b>My Portfolio</b></a>
-    <a class="market-tool" href="#risk-info">{{ icon('shield',27) }}<b>Risk Level</b></a>
+    <a class="market-tool" href="{{ url_for('market') }}"><span class="tool-btc">₿</span><b>Mining Rigs</b></a>
+    <a class="market-tool" href="{{ url_for('wallet') }}">{{ icon('briefcase',27) }}<b>My Requests</b></a>
+    <a class="market-tool" href="#mining-notice">{{ icon('shield',27) }}<b>Risk & Terms</b></a>
   </div>
-  <div class="market-assurances"><div>{{ icon('leaf',23) }}<span><b>Project Information</b><small>Review terms and risks</small></span></div><div>{{ icon('money',23) }}<span><b>Track Requests</b><small>Requests reviewed before funding</small></span></div></div>
-  <nav class="tabs" aria-label="Product categories">
-    {% for c in ['All','Solar','Real Estate','Green Energy'] %}<a class="{% if category==c %}active{% endif %}" href="{{ url_for('market',category=c) }}">{{ 'Explore All' if c=='All' else c }}</a>{% endfor %}
+  <nav class="tabs mining-tabs" aria-label="Mining rig types">
+    {% for c in ['All','SHA-256','ASIC PRO','HYDRO MAX'] %}<a class="{% if category==c %}active{% endif %}" href="{{ url_for('market',category=c) }}">{{ 'All Rigs' if c=='All' else c }}</a>{% endfor %}
   </nav>
   <section class="market-products">
   {% for p in products %}
-    <article class="market-product">
-      <div class="market-product-image"><img src="{{ url_for('static',filename='images/'+p.image) }}" alt="{{ p.name }}"><span>{{ p.category }}</span></div>
+    <article class="market-product mining-product">
+      <div class="mining-product-image"><img src="{{ url_for('static',filename='images/'+p.image) }}" alt="{{ p.name }}"><span>₿ {{ p.category }}</span><b class="hash-chip">{{ p.hashrate }}</b></div>
       <div class="market-product-info">
-        <h2>{{ p.name }}</h2>
-        <p class="market-description">{{ p.description }}</p>
-        <p>Investment range · <strong>UGX {{ "{:,.0f}".format(p.minimum) }}–{{ "{:,.0f}".format(p.maximum) }}</strong></p>
-        <p>Illustrative daily projection · <strong>{{ p.daily_projection }}</strong></p>
-        <p>Duration · {{ p.duration }}</p>
-        <p>Risk · {{ p.risk }}</p>
-        <div class="market-product-bottom">
-          <small>Projection only · not guaranteed</small>
-          <form method="post" action="{{ url_for('mine',product_id=p.id) }}" class="mine-form">
+        <h2>{{ p.name }}</h2><p class="market-description">{{ p.description }}</p>
+        <p>Activation range · <strong>UGX {{ "{:,.0f}".format(p.minimum) }}–{{ "{:,.0f}".format(p.maximum) }}</strong></p>
+        <p>Daily demo rate · <strong>{{ p.daily_projection }}</strong></p>
+        <p>Mining period · <strong>4549 days</strong></p>
+        <p>Wallet check · <strong>Required before request</strong></p>
+        <div class="market-product-bottom mining-product-bottom">
+          <form method="post" action="{{ url_for('mine',product_id=p.id) }}" class="mine-form" data-rate="{{ p.daily_rate }}">
             <label class="sr-only" for="mine-amount-{{ p.id }}">Amount in UGX</label>
-            <input id="mine-amount-{{ p.id }}" name="amount" type="number" min="{{ p.minimum }}" max="{{ p.maximum }}" step="1" placeholder="UGX amount" required>
-            <button type="submit">MINE</button>
+            <input id="mine-amount-{{ p.id }}" name="amount" type="number" min="{{ p.minimum }}" max="{{ p.maximum }}" step="1" placeholder="Enter UGX" required>
+            <button type="submit">START MINING</button>
           </form>
+          <small class="daily-preview" id="daily-preview-{{ p.id }}">Daily demo estimate: UGX 0</small>
         </div>
       </div>
     </article>
-  {% else %}<p class="card muted">No products match this category.</p>{% endfor %}
+  {% else %}<p class="card muted">No mining rigs match this category.</p>{% endfor %}
   </section>
-  <section class="projection-notice" id="risk-info"><strong>Important risk notice</strong><p>The displayed daily percentages are illustrative projections only, not promised or guaranteed returns. A MINE submission creates a pending review request; it does not debit your wallet or create earnings. Daily wallet credits must only be made from independently verified, realized earnings, with dated transaction records and duplicate-credit protection. No verified earnings feed or approved payout schedule is currently configured.</p></section>
+  <section class="projection-notice mining-notice" id="mining-notice"><strong>Mining simulator and payout notice</strong><p>All displayed daily rates and hashrates are illustrative simulator values, not live Bitcoin mining measurements, promised returns, or guaranteed income. This app is not connected to a mining pool. A sufficient wallet balance only allows a request to be submitted for review; this demo does not deduct funds or automatically credit simulated earnings. Real BTC payouts require verified pool earnings, a confirmed payout transaction, and an auditable credit record. The 4549-day period is a displayed simulation term only.</p></section>
 </main>
+<script>
+for (const form of document.querySelectorAll('.mine-form')) {
+  const input = form.querySelector('input');
+  const preview = document.getElementById('daily-preview-' + input.id.split('-').pop());
+  const rate = Number(form.dataset.rate || 0);
+  const update = () => {
+    const amount = Number(input.value || 0);
+    preview.textContent = 'Daily demo estimate: UGX ' + Math.round(amount * rate).toLocaleString('en-US');
+  };
+  input.addEventListener('input', update);
+}
+</script>
 {% include "nav.html" %}
 {% endblock %}

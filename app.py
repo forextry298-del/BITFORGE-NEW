@@ -17,9 +17,9 @@ if not os.path.exists(DB) and os.path.isfile(LEGACY_DB) and os.path.abspath(DB) 
 
 
 PRODUCTS = [
-    {"id": 1, "name": "Solar Farm Project", "category": "Solar", "description": "Solar energy infrastructure project", "minimum": 5000, "maximum": 100000, "daily_projection": "20%", "duration": "456 days", "risk": "High", "return_text": "Illustrative projection: 20% daily; not guaranteed", "image": "solar_farm.jpg"},
-    {"id": 2, "name": "Commercial Property", "category": "Real Estate", "description": "Commercial property project", "minimum": 150000, "maximum": 1000000, "daily_projection": "34%", "duration": "Terms to be confirmed", "risk": "High", "return_text": "Illustrative projection: 34% daily; not guaranteed", "image": "real_estate.jpg"},
-    {"id": 3, "name": "Green Energy Fund", "category": "Green Energy", "description": "Wind and clean-energy infrastructure", "minimum": 2000000, "maximum": 5000000, "daily_projection": "47.6%", "duration": "Terms to be confirmed", "risk": "High", "return_text": "Illustrative projection: 47.6% daily; not guaranteed", "image": "green_energy.jpg"},
+    {"id": 1, "name": "BITCOIN MINER · SHA-256", "category": "SHA-256", "description": "Entry-level Bitcoin mining simulator", "minimum": 5000, "maximum": 100000, "daily_rate": 0.20, "daily_projection": "20% demo estimate", "duration": "4549 days", "risk": "High", "image": "solar_farm.jpg", "hashrate": "1.2 TH/s"},
+    {"id": 2, "name": "BITCOIN MINER · ASIC PRO", "category": "ASIC PRO", "description": "Advanced ASIC mining simulator", "minimum": 150000, "maximum": 1000000, "daily_rate": 0.34, "daily_projection": "34% demo estimate", "duration": "4549 days", "risk": "High", "image": "real_estate.jpg", "hashrate": "8.5 TH/s"},
+    {"id": 3, "name": "BITCOIN MINER · HYDRO MAX", "category": "HYDRO MAX", "description": "High-capacity Bitcoin mining simulator", "minimum": 2000000, "maximum": 5000000, "daily_rate": 0.476, "daily_projection": "47.6% demo estimate", "duration": "4549 days", "risk": "High", "image": "green_energy.jpg", "hashrate": "25 TH/s"},
 ]
 
 def db():
@@ -190,32 +190,41 @@ def market():
     category = request.args.get("category", "All")
     query = request.args.get("q", "").strip().lower()
     products = PRODUCTS if category == "All" else [p for p in PRODUCTS if p["category"] == category]
+    current_user = db().execute("SELECT balance FROM users WHERE id=?", (session["user_id"],)).fetchone()
+    current_user_balance = float(current_user["balance"] or 0) if current_user else 0
     if query:
         products = [p for p in products if query in (p["name"] + " " + p["category"] + " " + p["description"]).lower()]
-    return render_template("market.html", products=products, category=category, query=query)
+    return render_template("market.html", products=products, category=category, query=query, current_user_balance=current_user_balance)
 
 @app.route("/mine/<int:product_id>", methods=["POST"])
 @login_required
 def mine(product_id):
     product = next((p for p in PRODUCTS if p["id"] == product_id), None)
     if product is None:
-        flash("That product is unavailable.")
+        flash("That Bitcoin mining rig is unavailable.")
         return redirect(url_for("market"))
     try:
         amount = float(request.form.get("amount", "0"))
     except (TypeError, ValueError):
         amount = 0
     if amount < product["minimum"] or amount > product["maximum"]:
-        flash("Enter an amount within this product's investment range.")
+        flash("Enter an amount within this mining rig's UGX range.")
         return redirect(url_for("market"))
-    # A MINE click creates a review request only. No wallet debit or return is
-    # made until funding, terms, and actual realized earnings are verified.
+    user = db().execute("SELECT balance FROM users WHERE id=?", (session["user_id"],)).fetchone()
+    balance = float(user["balance"] or 0) if user else 0
+    if balance < amount:
+        shortfall = amount - balance
+        flash(f"INSUFFICIENT BALANCE. Available: UGX {balance:,.0f}. You need UGX {shortfall:,.0f} more.")
+        return redirect(url_for("market"))
+    # A sufficient balance is detected, but this demo only creates a pending
+    # request. No wallet debit or mining payout occurs without verified mining.
     db().execute(
         "INSERT INTO mine_requests(user_id, product_id, product_name, amount) VALUES(?,?,?,?)",
         (session["user_id"], product["id"], product["name"], amount)
     )
     db().commit()
-    flash("Mining request submitted for review. No funds were deducted and no earnings were credited.")
+    daily_demo = amount * product["daily_rate"]
+    flash(f"SUFFICIENT BALANCE DETECTED. Mining request submitted for review. Illustrative daily estimate: UGX {daily_demo:,.0f}. No funds were deducted and no Bitcoin earnings were credited.")
     return redirect(url_for("market"))
 
 @app.route("/wallet")
