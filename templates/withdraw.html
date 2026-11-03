@@ -2,6 +2,9 @@
 {% from "icons.html" import icon %}
 {% block title %}Withdrawal · BitForge{% endblock %}
 {% block body %}
+<header class="top withdrawal-top">
+  <a class="brand" href="{{ url_for('home') }}"><img class="logo logo-image" src="{{ url_for('static',filename='images/bitforge_robot_logo.webp') }}" alt="BitForge"><span>BitForge Mining</span></a>
+</header>
 <main class="wrap content withdrawal-page">
   <form class="withdraw-form" method="post">
     <div class="withdraw-amount-label"><label for="withdraw-amount">Amount to withdraw</label><span>Max: UGX {{ "{:,.0f}".format(user.balance) }}</span></div>

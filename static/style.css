@@ -482,3 +482,27 @@ body{background:var(--page);color:var(--ink);font-size:15px}
 .auth-dark-panel .auth-foot a{color:#94651c!important}
 .auth-dark-panel .flash{border:1px solid #ead7ae!important;background:#fff6e4!important;color:#77551a!important}
 @media(max-width:380px){.auth-dark-page{padding:16px 12px 24px!important}.auth-dark-panel{padding:14px!important}.auth-dark .auth-head h1{font-size:21px!important}}
+
+/* Compact, responsive BitForge withdrawal page */
+.withdrawal-top{min-height:58px;padding:8px 16px;display:flex;align-items:center;background:#111c30;border-bottom:1px solid #26364d}
+.withdrawal-top .brand{gap:8px;color:#fff;font-size:18px;letter-spacing:-.35px}
+.withdrawal-top .logo{width:34px;height:34px;border-radius:10px}
+.withdrawal-page{width:min(100% - 24px,440px);max-width:440px;margin:0 auto;padding:12px 0 92px}
+.withdrawal-page .withdraw-form{padding:13px;border-radius:15px}
+.withdrawal-page .withdraw-amount-label{font-size:12px;margin-bottom:7px}
+.withdrawal-page .withdraw-input-wrap{height:46px;padding:0 10px;border-radius:10px}
+.withdrawal-page .withdraw-input-wrap input{font-size:16px}
+.withdrawal-page .field label{font-size:10px}
+.withdrawal-page .field input{min-height:43px;font-size:14px}
+.withdrawal-page .withdraw-fee-box{margin:10px 0;padding:9px 11px;border-radius:11px}
+.withdrawal-page .withdraw-fee-box>div{font-size:11px;padding:6px 0}
+.withdrawal-page .withdraw-fee-box .withdraw-net{font-size:13px}
+.withdrawal-page .withdraw-fee-box .withdraw-net b{font-size:14px}
+.withdrawal-page .withdraw-note{font-size:10px;line-height:1.4;padding:9px;margin-top:9px}
+.withdrawal-page .withdraw-submit{min-height:44px;padding:10px 12px;margin-top:10px;border-radius:12px;font-size:14px}
+.withdrawal-page .withdraw-disclaimer{font-size:9px;line-height:1.4;margin-top:8px}
+.withdrawal-page .withdraw-history{padding:12px;margin-top:12px;border-radius:15px}
+.withdrawal-page .withdraw-history-head h2{font-size:15px}
+.withdrawal-page .withdraw-history-row{padding:11px 0;gap:8px}
+.withdrawal-page .withdraw-history-icon{width:32px;height:32px;border-radius:9px}
+@media(max-width:360px){.withdrawal-page{width:calc(100% - 18px)}.withdrawal-top{padding-inline:11px}.withdrawal-top .brand{font-size:16px}.withdrawal-page .withdraw-form{padding:11px}}
