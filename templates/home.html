@@ -3,7 +3,7 @@
 {% from 'icons.html' import icon %}
 {% block body %}
 <header class="top home-top">
-  <a class="brand" href="{{ url_for('home') }}"><span class="logo">B</span><span>BitForge</span></a>
+  <a class="brand" href="{{ url_for('home') }}"><img class="logo logo-image" src="{{ url_for('static',filename='images/bitforge_robot_logo.webp') }}" alt="BitForge"><span>BitForge</span></a>
   <button class="menu-button" id="menuButton" type="button" aria-label="Open menu"><span class="hamburger"><i></i><i></i><i></i></span></button>
   <div class="menu-popover" id="menuPopover">
     <div class="menu-label">MENU</div>

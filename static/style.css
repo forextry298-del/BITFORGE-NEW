@@ -459,3 +459,26 @@ body{background:var(--page);color:var(--ink);font-size:15px}
 .auth-dark-panel .flash{padding:10px 12px;margin:8px 0 12px;border:1px solid #70404a;border-radius:11px;background:#321b25;color:#ffc3ca;font-size:12px}
 .auth-login-page{padding-top:54px}
 @media(max-width:380px){.auth-dark-page{padding:22px 13px 32px}.auth-dark-panel{padding:19px 16px}.auth-dark .auth-head h1{font-size:25px}}
+
+/* Compact BitForge authentication pages: match the mining dashboard */
+.logo-image{display:block;object-fit:cover;border:2px solid #f2b34a;background:#111c30}
+.auth-dark-page{background:#f4f5f9!important;min-height:100vh;padding:24px 14px 34px!important;align-items:center!important}
+.auth-dark{max-width:390px!important}
+.auth-dark .auth-head{margin-bottom:15px!important}
+.auth-dark .auth-head h1{font-size:23px!important;line-height:1.2;margin:0 0 5px!important;color:#182235}
+.auth-dark .auth-head .sub{font-size:13px!important;color:#7b8494}
+.auth-logo-image{display:block;width:48px!important;height:48px!important;margin:0 auto 10px!important;border-radius:13px!important;object-fit:cover;border:2px solid #efb34e;box-shadow:0 3px 10px #17203318}
+.auth-dark-panel{padding:17px!important;border-radius:17px!important;background:#fff!important;border:1px solid #e5e2d9!important;box-shadow:0 4px 16px #1720330b!important}
+.auth-dark-panel .field{gap:5px!important;margin-bottom:11px!important}
+.auth-dark-panel .field label{font-size:10px!important;letter-spacing:.5px;color:#697386!important}
+.auth-dark-panel .field input,.auth-dark-panel .field select{height:43px!important;border-radius:10px!important;padding:0 12px!important;background:#fbfbfc!important;border:1px solid #dfe3e9!important;color:#182235!important;font-size:14px!important}
+.auth-dark-panel .phone-entry,.auth-dark-panel .password-entry{height:43px!important;border-radius:10px!important;background:#fbfbfc!important;border:1px solid #dfe3e9!important}
+.auth-dark-panel .phone-entry span{font-size:13px!important;color:#9a6a1e!important;padding:0 10px!important}
+.auth-dark-panel .phone-entry input,.auth-dark-panel .password-entry input{height:100%!important;background:transparent!important;color:#182235!important;font-size:14px!important}
+.auth-dark-panel .field input::placeholder{color:#8a91a0!important}
+.auth-dark-panel .show-password{font-size:10px!important;color:#986a21!important;padding:0 10px!important}
+.auth-dark-panel .auth-submit{min-height:44px!important;margin-top:2px!important;border-radius:11px!important;background:linear-gradient(100deg,#ffc04d,#e98717)!important;color:#20170c!important;font-size:14px!important;box-shadow:0 4px 12px #e9871725!important}
+.auth-dark-panel .auth-foot{margin-top:13px!important;color:#778092!important;font-size:12px!important}
+.auth-dark-panel .auth-foot a{color:#94651c!important}
+.auth-dark-panel .flash{border:1px solid #ead7ae!important;background:#fff6e4!important;color:#77551a!important}
+@media(max-width:380px){.auth-dark-page{padding:16px 12px 24px!important}.auth-dark-panel{padding:14px!important}.auth-dark .auth-head h1{font-size:21px!important}}
