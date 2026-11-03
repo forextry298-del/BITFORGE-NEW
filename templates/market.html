@@ -32,33 +32,13 @@
             <input id="mine-amount-{{ p.id }}" name="amount" type="number" min="{{ p.minimum }}" max="{{ p.maximum }}" step="1" placeholder="Enter UGX" required>
             <button type="submit">START MINING</button>
           </form>
-          <small class="daily-preview" id="daily-preview-{{ p.id }}">Enter an amount to calculate the daily scenario estimate.</small>
         </div>
       </div>
     </article>
   {% else %}<p class="card muted">No mining rigs match this category.</p>{% endfor %}
   </section>
-  <p id="mining-terms" class="mining-footnote">Daily percentages are illustrative calculations, not guaranteed mining returns. Real payouts require verified mining-pool settlement data.</p>
 </main>
 
 {% include "nav.html" %}
-<script>
-document.querySelectorAll(".mine-form").forEach(function(form){
-  const input=form.querySelector('input[name="amount"]');
-  const rate=Number(form.dataset.rate || 0);
-  const preview=form.parentElement.querySelector(".daily-preview");
-  if(!input || !preview) return;
-  const money=n=>"UGX "+Math.round(n).toLocaleString("en-US");
-  function update(){
-    const amount=Number(input.value);
-    if(!input.value || !Number.isFinite(amount) || amount<=0){
-      preview.textContent="Daily scenario estimate · "+rate+"% · enter amount";
-      return;
-    }
-    preview.textContent="Illustrative daily calculation: "+rate+"% × "+money(amount)+" = "+money(amount*rate/100)+" / day (not actual pool earnings)";
-  }
-  input.addEventListener("input",update);
-  update();
-});
-</script>
+
 {% endblock %}
