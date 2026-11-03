@@ -12,9 +12,6 @@
     <a class="market-tool" href="{{ url_for('wallet') }}">{{ icon('briefcase',27) }}<b>My Requests</b></a>
     <a class="market-tool" href="#mining-terms">{{ icon('shield',27) }}<b>Risk & Terms</b></a>
   </div>
-  <nav class="tabs mining-tabs" aria-label="Mining rig types">
-    {% for c in ['All','SHA-256','ASIC PRO','HYDRO MAX'] %}<a class="{% if category==c %}active{% endif %}" href="{{ url_for('market',category=c) }}">{{ 'All Rigs' if c=='All' else c }}</a>{% endfor %}
-  </nav>
   <section class="market-products">
   {% for p in products %}
     <article class="market-product mining-product">
@@ -32,6 +29,7 @@
             <input id="mine-amount-{{ p.id }}" name="amount" type="number" min="{{ p.minimum }}" max="{{ p.maximum }}" step="1" placeholder="Enter UGX" required>
             <button type="submit">START MINING</button>
           </form>
+          <div class="daily-preview" aria-live="polite">Daily scenario estimate · {{ p.daily_rate }}% · enter amount</div>
         </div>
       </div>
     </article>
@@ -40,5 +38,22 @@
 </main>
 
 {% include "nav.html" %}
-
+<script>
+(() => {
+  document.querySelectorAll('.mine-form').forEach(form => {
+    const input = form.querySelector('input[name="amount"]');
+    const preview = form.nextElementSibling;
+    const rate = Number(form.dataset.rate || 0);
+    const fmt = n => 'UGX ' + n.toLocaleString('en-UG', {maximumFractionDigits: 0});
+    const update = () => {
+      const amount = Number(input.value || 0);
+      preview.textContent = amount > 0
+        ? `Daily scenario estimate · ${rate}% · ${fmt(amount * rate / 100)}`
+        : `Daily scenario estimate · ${rate}% · enter amount`;
+    };
+    input.addEventListener('input', update);
+    update();
+  });
+})();
+</script>
 {% endblock %}

@@ -3,9 +3,6 @@
 {% block title %}Withdrawal · BitForge{% endblock %}
 {% block body %}
 <main class="wrap content withdrawal-page">
-  <div class="withdraw-heading"><a href="{{ url_for('wallet') }}" aria-label="Back">←</a><h1>Mining Wallet Withdrawal</h1><span class="secure-pill">{{ icon('shield',16) }} Secure Payment</span></div>
-  <section class="withdraw-balance"><span>₿ AVAILABLE MINING WALLET BALANCE</span><strong>UGX {{ "{:,.0f}".format(user.balance) }}</strong><small>✓ &nbsp;Available balance · Withdrawal subject to verification</small></section>
-  <h2 class="withdraw-section-title">₿ Withdraw mining funds</h2>
   <form class="withdraw-form" method="post">
     <div class="withdraw-amount-label"><label for="withdraw-amount">Amount to withdraw</label><span>Max: UGX {{ "{:,.0f}".format(user.balance) }}</span></div>
     <div class="withdraw-input-wrap"><span>UGX</span><input id="withdraw-amount" name="amount" type="number" min="10000" max="{{ user.balance }}" step="1000" placeholder="Enter amount" required></div>

@@ -499,7 +499,7 @@ def admin_required(fn):
     @wraps(fn)
     def wrapped(*args, **kwargs):
         user = db().execute("SELECT phone FROM users WHERE id=?", (session.get("user_id", -1),)).fetchone()
-        admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0758878297"))
+        admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0757837051"))
         if not user or user["phone"] != admin_phone or not session.get("bitforge_admin_verified"):
             return redirect(url_for("admin_login"))
         return fn(*args, **kwargs)
@@ -511,14 +511,14 @@ def admin_login():
         user = db().execute("SELECT * FROM users WHERE id=?", (session.get("user_id", -1),)).fetchone()
         key = os.environ.get("BITFORGE_ADMIN_PANEL_KEY", "")
         supplied = request.form.get("admin_key", "")
-        admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0758878297"))
+        admin_phone = normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0757837051"))
         if user and user["phone"] == admin_phone and key and secrets.compare_digest(supplied, key):
             session["bitforge_admin_verified"] = True
             return redirect(url_for("admin_dashboard"))
         flash("Admin access denied. Sign in with the designated admin account and configured admin key.")
     if session.get("user_id"):
         u = db().execute("SELECT phone FROM users WHERE id=?", (session["user_id"],)).fetchone()
-        if u and u["phone"] == normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0758878297")):
+        if u and u["phone"] == normalize_phone(os.environ.get("BITFORGE_ADMIN_PHONE", "0757837051")):
             return render_template("admin_panel_login.html")
     return redirect(url_for("login"))
 

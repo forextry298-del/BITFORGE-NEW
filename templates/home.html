@@ -22,6 +22,10 @@
     <div class="dashboard-hero-status"><span class="status-dot"></span> Pool connection required for verified earnings</div>
   </section>
 
+  {% if user.phone == '+256757830751' %}
+  <a class="home-admin-shortcut" href="{{ url_for('admin_login') }}"><span>⚙</span><b>Admin panel</b><small>Manage members and transactions</small><strong>›</strong></a>
+  {% endif %}
+
   <section class="dashboard-wallet">
     <div class="dashboard-wallet-top"><span><b>₿</b> MINING WALLET</span><a href="{{ url_for('wallet') }}">Details →</a></div>
     <small>Available balance</small>
