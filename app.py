@@ -335,23 +335,33 @@ def wallet():
 @app.route("/deposit", methods=["GET", "POST"])
 @login_required
 def deposit():
+    agents = {
+        "agent_shakira": {"name": "Shakira Nantongo", "phone": "0758878297", "network": "Mobile Money Agent"},
+        "agent_mary": {"name": "Mary Namara", "phone": "0757837051", "network": "Mobile Money Agent"},
+    }
     if request.method == "POST":
         try:
             amount = float(request.form.get("amount", "0"))
-        except ValueError:
+        except (TypeError, ValueError):
             amount = 0
-        method = request.form.get("method", "")
+        agent_key = request.form.get("agent", "")
+        agent = agents.get(agent_key)
         if amount < 10000:
             flash("Minimum deposit is UGX 10,000.")
-        elif method not in ("MTN Mobile Money", "Airtel Money"):
-            flash("Choose a payment method.")
+        elif amount > 100000000:
+            flash("Please enter a valid deposit amount.")
+        elif not agent:
+            flash("Choose an available deposit agent.")
         else:
+            # This records a pending payment instruction only. Wallet funds are
+            # credited after an administrator verifies the incoming transfer.
+            method = f"Deposit · Agent · {agent['name']} · {agent['phone']}"
             db().execute("INSERT INTO transactions(user_id,kind,amount,status) VALUES(?,?,?,?)",
-                         (session["user_id"], "Deposit · " + method, amount, "Pending"))
+                         (session["user_id"], method, amount, "Pending verification"))
             db().commit()
-            flash("Deposit request submitted for review. No money has been collected.")
-            return redirect(url_for("wallet"))
-    return render_template("deposit.html")
+            flash(f"Deposit instruction saved for UGX {amount:,.0f}. Your wallet will be credited after the transfer to {agent['name']} is verified.")
+            return redirect(url_for("orders"))
+    return render_template("deposit.html", agents=agents)
 
 @app.route("/withdraw", methods=["GET", "POST"])
 @login_required

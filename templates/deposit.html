@@ -6,60 +6,99 @@
   <a class="deposit-back" href="{{ url_for('wallet') }}" aria-label="Back">←</a>
   <div><h1>Deposit</h1><div class="deposit-brand"><span class="deposit-brand-mark">₿</span><strong>BITFORGE MINING</strong><small>SECURE WALLET</small></div></div>
 </header>
-<main class="deposit-page">
+<main class="deposit-page agent-deposit-page">
   <form method="post" id="depositForm" class="deposit-form">
-    <section class="deposit-section">
+    <section class="deposit-section agent-step" id="amountStep">
       <h2>₿ Add funds to your mining wallet</h2>
-      <div class="amount-entry"><span class="currency-mark">UGX</span><input id="depositAmount" name="amount" type="number" inputmode="numeric" min="10000" step="1000" placeholder="0" required aria-label="Deposit Amount"><span class="currency-chip">UGX</span></div>
-      <p class="deposit-hint">Minimum deposit: UGX 10,000 <span>•</span> Instant deposit request</p>
+      <div class="amount-entry"><span class="currency-mark">UGX</span><input id="depositAmount" name="amount" type="number" inputmode="numeric" min="10000" max="100000000" step="1000" placeholder="Enter amount" required aria-label="Deposit Amount"><span class="currency-chip">UGX</span></div>
+      <p class="deposit-hint">Minimum deposit: UGX 10,000 <span>•</span> Agent-assisted deposit</p>
+      <div class="deposit-summary agent-summary" aria-live="polite"><div><span>Deposit amount</span><strong id="summaryAmount">UGX 0</strong></div><div class="summary-total"><span>Total to send</span><strong id="summaryTotal">UGX 0</strong></div></div>
+      <button class="deposit-submit" id="continueButton" type="button">CONTINUE</button>
     </section>
 
-    <section class="deposit-section">
-      <h2>Payment Method</h2>
-      <label class="payment-option selected" data-method="MTN Mobile Money">
-        <input type="radio" name="method" value="MTN Mobile Money" checked required>
-        <span class="provider-logo mtn-logo">MTN</span>
-        <span class="provider-copy"><strong>MTN Mobile Money</strong><small>Fee: UGX 0 <i>•</i> Instant</small></span>
-        <span class="radio-visual" aria-hidden="true"></span>
-      </label>
-      <label class="payment-option" data-method="Airtel Money">
-        <input type="radio" name="method" value="Airtel Money" required>
-        <span class="provider-logo airtel-logo"><b>A</b></span>
-        <span class="provider-copy"><strong>Airtel Money</strong><small>Fee: UGX 0 <i>•</i> Instant</small></span>
-        <span class="radio-visual" aria-hidden="true"></span>
-      </label>
+    <section class="agent-step agent-selection" id="agentStep" hidden>
+      <div class="agent-step-heading"><span class="agent-step-icon">⌕</span><div><h2>Available deposit agents</h2><p>Select one agent to receive your payment</p></div></div>
+      <div class="agent-searching" id="searchingState"><span class="agent-spinner"></span><strong>Searching for agent...</strong><small>Checking available payment contacts</small></div>
+      <div class="agent-list" id="agentList" hidden>
+        {% for key, agent in agents.items() %}
+        <label class="agent-card">
+          <input type="radio" name="agent" value="{{ key }}">
+          <span class="agent-avatar">{{ agent.name[0] }}</span>
+          <span class="agent-details"><strong>{{ agent.name }}</strong><b>{{ agent.phone }}</b><small>{{ agent.network }}</small></span>
+          <span class="agent-radio" aria-hidden="true"></span>
+        </label>
+        {% endfor %}
+        <p class="agent-secure-note">Choose the recipient carefully. Confirm the displayed name and number before sending money.</p>
+        <button class="deposit-submit agent-choose-button" id="chooseAgentButton" type="button" disabled>CONTINUE</button>
+      </div>
     </section>
 
-    <section class="deposit-summary" aria-live="polite">
-      <div><span>Amount</span><strong id="summaryAmount">UGX 0</strong></div>
-      <div><span>Fee</span><strong>UGX 0</strong></div>
-      <div class="summary-total"><span>Total</span><strong id="summaryTotal">UGX 0</strong></div>
+    <section class="agent-step agent-payment" id="paymentStep" hidden>
+      <div class="agent-processing" id="processingState"><span class="agent-spinner"></span><strong>Processing...</strong><small>Preparing your payment instructions</small></div>
+      <div id="paymentDetails" hidden>
+        <div class="payment-ready-mark">✓</div>
+        <h2>Send money to this agent</h2>
+        <p class="payment-intro">Use your mobile money menu to send the exact amount below.</p>
+        <div class="chosen-agent-card"><span class="agent-avatar" id="chosenAvatar">S</span><div><strong id="chosenName">Agent name</strong><b id="chosenPhone">07XXXXXXXX</b><small>BitForge deposit agent</small></div></div>
+        <div class="send-amount-card"><span>Amount to send</span><strong id="chosenAmount">UGX 0</strong></div>
+        <ol class="agent-instructions"><li>Open MTN or Airtel Mobile Money.</li><li>Select Send Money and enter the agent's number above.</li><li>Confirm the recipient name and send the exact amount.</li><li>Return here and confirm that you have sent it.</li></ol>
+        <label class="agent-confirm-check"><input type="checkbox" id="sentConfirmation"> <span>I have sent the money to the selected agent.</span></label>
+        <button class="deposit-submit" id="submitDeposit" type="submit" disabled>I've sent the money</button>
+        <p class="deposit-notice">Your request remains pending until an administrator verifies the payment. BitForge will not credit your wallet based on this button alone.</p>
+      </div>
     </section>
     {% with messages=get_flashed_messages() %}{% for message in messages %}<div class="flash">{{ message }}</div>{% endfor %}{% endwith %}
-    <button class="deposit-submit" id="depositSubmit" type="submit">ADD FUNDS · UGX 0</button>
-    <p class="deposit-terms">By continuing, you agree to our <a href="#terms">Terms</a> &amp; <a href="#privacy">Privacy Policy</a></p>
-    <p class="deposit-notice">Your deposit request is recorded for review. Your wallet is updated only after payment is verified.</p>
+    <p class="deposit-terms">Secure agent-assisted deposit · BitForge Mining</p>
   </form>
 </main>
 {% include "nav.html" %}
 <script>
 (() => {
   const amount = document.getElementById('depositAmount');
-  const total = document.getElementById('summaryTotal');
   const summary = document.getElementById('summaryAmount');
-  const button = document.getElementById('depositSubmit');
+  const total = document.getElementById('summaryTotal');
   const format = value => 'UGX ' + Math.max(0, Math.floor(Number(value) || 0)).toLocaleString('en-UG');
-  function update(){ const value = Math.max(0, Number(amount.value) || 0); summary.textContent = format(value); total.textContent = format(value); button.textContent = 'ADD FUNDS · ' + format(value); }
-  amount.addEventListener('input', update);
-  document.querySelectorAll('.payment-option input').forEach(radio => radio.addEventListener('change', () => {
-    document.querySelectorAll('.payment-option').forEach(card => card.classList.toggle('selected', card.querySelector('input').checked));
-  }));
-  document.getElementById('depositForm').addEventListener('submit', event => {
-    if (Number(amount.value) < 10000) { event.preventDefault(); amount.setCustomValidity('Minimum deposit is UGX 10,000'); amount.reportValidity(); }
-    else amount.setCustomValidity('');
+  const amountStep = document.getElementById('amountStep');
+  const agentStep = document.getElementById('agentStep');
+  const paymentStep = document.getElementById('paymentStep');
+  const continueButton = document.getElementById('continueButton');
+  const agentList = document.getElementById('agentList');
+  const searching = document.getElementById('searchingState');
+  const chooseButton = document.getElementById('chooseAgentButton');
+  const processing = document.getElementById('processingState');
+  const paymentDetails = document.getElementById('paymentDetails');
+  const confirmation = document.getElementById('sentConfirmation');
+  const submit = document.getElementById('submitDeposit');
+  const agents = {
+    agent_shakira: {name:'Shakira Nantongo', phone:'0758878297'},
+    agent_mary: {name:'Mary Namara', phone:'0757837051'}
+  };
+  function updateAmount(){const v=Math.max(0,Number(amount.value)||0);summary.textContent=format(v);total.textContent=format(v)}
+  amount.addEventListener('input',updateAmount); updateAmount();
+  continueButton.addEventListener('click',()=>{
+    if(!amount.value || Number(amount.value)<10000 || Number(amount.value)>100000000){amount.setCustomValidity('Enter an amount from UGX 10,000 to UGX 100,000,000.');amount.reportValidity();return}
+    amount.setCustomValidity(''); amountStep.hidden=true; agentStep.hidden=false;
+    searching.hidden=false; agentList.hidden=true;
+    window.setTimeout(()=>{searching.hidden=true;agentList.hidden=false},650);
   });
-  amount.addEventListener('input', () => amount.setCustomValidity(''));
-  update();
+  document.querySelectorAll('input[name="agent"]').forEach(r=>r.addEventListener('change',()=>{
+    document.querySelectorAll('.agent-card').forEach(c=>c.classList.toggle('selected',c.querySelector('input').checked));
+    chooseButton.disabled=!document.querySelector('input[name="agent"]:checked');
+  }));
+  chooseButton.addEventListener('click',()=>{
+    const selected=document.querySelector('input[name="agent"]:checked'); if(!selected)return;
+    const agent=agents[selected.value]; if(!agent)return;
+    document.getElementById('chosenName').textContent=agent.name;
+    document.getElementById('chosenPhone').textContent=agent.phone;
+    document.getElementById('chosenAvatar').textContent=agent.name.charAt(0);
+    document.getElementById('chosenAmount').textContent=format(amount.value);
+    agentStep.hidden=true;paymentStep.hidden=false;processing.hidden=false;paymentDetails.hidden=true;
+    window.setTimeout(()=>{processing.hidden=true;paymentDetails.hidden=false},650);
+  });
+  confirmation.addEventListener('change',()=>submit.disabled=!confirmation.checked);
+  document.getElementById('depositForm').addEventListener('submit',event=>{
+    if(!document.querySelector('input[name="agent"]:checked') || !confirmation.checked){event.preventDefault()}
+  });
 })();
 </script>
 {% endblock %}
