@@ -218,6 +218,7 @@ def deposit():
 @login_required
 def withdraw():
     user = db().execute("SELECT * FROM users WHERE id=?", (session["user_id"],)).fetchone()
+    txns = db().execute("SELECT * FROM transactions WHERE user_id=? AND kind LIKE '%Withdrawal%' ORDER BY id DESC LIMIT 10", (session["user_id"],)).fetchall()
     if request.method == "POST":
         try:
             amount = float(request.form.get("amount", "0"))
@@ -233,7 +234,7 @@ def withdraw():
             db().commit()
             flash("Withdrawal request submitted for review.")
             return redirect(url_for("wallet"))
-    return render_template("withdraw.html", user=user)
+    return render_template("withdraw.html", user=user, txns=txns)
 
 @app.route("/orders")
 @login_required

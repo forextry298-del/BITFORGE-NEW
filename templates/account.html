@@ -1,1 +1,21 @@
-{% extends "base.html" %}{% block title %}Account · BitForge{% endblock %}{% block body %}<header class="top"><a class="brand" href="{{url_for('home')}}"><span class="logo">B</span>BitForge</a><span class="muted">Account</span></header><main class="wrap content"><h1 style="font-size:22px">Account</h1><section class="card"><div class="row"><div><div style="font-size:17px;font-weight:800">{{user.full_name}}</div><div class="muted small">{{user.phone}}</div></div><div class="logo" style="width:48px;height:48px;border-radius:50%">B</div></div><div class="card" style="margin:14px 0 0"><div class="muted small">Wallet Balance</div><div style="font-size:25px;font-weight:800">UGX {{ "{:,.0f}".format(user.balance) }}</div><div class="muted small">Demo balance · Updated when approved</div></div><div class="actions" style="margin-top:12px"><a class="btn" href="{{url_for('deposit')}}">↓ Deposit</a><a class="btn outline" href="{{url_for('withdraw')}}">↑ Withdraw</a></div></section><div class="section-title">Activity</div><a class="card row" href="{{url_for('orders')}}">▤ Transaction History <span>›</span></a><div class="section-title">General</div><div class="card">⚙ Settings <div class="muted small">Currency: UGX · Uganda</div></div><a class="card" style="display:block;color:#b43e55" href="{{url_for('logout')}}">↪ Logout</a></main>{% include "nav.html" %}{% endblock %}
+{% extends "base.html" %}
+{% from "icons.html" import icon %}
+{% block title %}My Account · BitForge{% endblock %}
+{% block body %}
+<main class="wrap content account-page">
+  <div class="account-heading"><div><span class="eyebrow">BITFORGE ACCOUNT</span><h1>Account</h1></div><div class="account-edit-mark">{{ icon('account',25) }}</div></div>
+  <section class="profile-card">
+    <div class="profile-top"><div class="profile-avatar">{{ (user.full_name or 'B')[:1]|upper }}</div><div class="profile-identity"><h2>{{ user.full_name }}</h2><p>{{ user.phone }}</p><span class="profile-status"><i></i> Account profile</span></div></div>
+    <div class="profile-balance"><span>Wallet Balance</span><strong>UGX {{ "{:,.0f}".format(user.balance) }}</strong><small>{{ icon('wallet',15) }} Available balance · Updated from your wallet</small></div>
+    <div class="profile-actions"><a class="profile-deposit" href="{{ url_for('deposit') }}">{{ icon('deposit',20) }} Deposit</a><a class="profile-withdraw" href="{{ url_for('withdraw') }}">{{ icon('withdraw',20) }} Withdrawal</a></div>
+  </section>
+  <h2 class="account-section-title">Activity</h2>
+  <a class="account-menu-row lilac" href="{{ url_for('orders') }}"><span class="account-menu-icon">{{ icon('orders',23) }}</span><span>Transaction History</span><b>›</b></a>
+  <div class="account-menu-row lilac"><span class="account-menu-icon">{{ icon('shield',23) }}</span><span>Secure Payment<small>Protect your account details</small></span><em>Protected</em></div>
+  <h2 class="account-section-title">General</h2>
+  <a class="account-menu-row neutral" href="{{ url_for('account') }}"><span class="account-menu-icon">{{ icon('settings',23) }}</span><span>Account Details<small>{{ user.phone }}</small></span><b>›</b></a>
+  <a class="account-menu-row neutral" href="{{ url_for('wallet') }}"><span class="account-menu-icon">{{ icon('wallet',23) }}</span><span>My Wallet<small>View balance and payment requests</small></span><b>›</b></a>
+  <a class="account-menu-row logout-row" href="{{ url_for('logout') }}"><span class="account-menu-icon">↪</span><span>Logout</span><b>›</b></a>
+</main>
+{% include "nav.html" %}
+{% endblock %}

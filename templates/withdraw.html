@@ -1,1 +1,23 @@
-{% extends "base.html" %}{% block title %}Withdrawal · BitForge{% endblock %}{% block body %}<header class="top"><a class="brand" href="{{url_for('home')}}"><span class="logo">B</span>BitForge</a><a href="{{url_for('wallet')}}">← Back</a></header><main class="wrap content"><h1 style="font-size:23px">Withdrawal</h1><section class="balance"><div class="small">Available Balance</div><div class="amount">UGX {{ "{:,.0f}".format(user.balance) }}</div><div class="small">Demo wallet balance</div></section><form class="card" method="post"><div class="section-title">Withdraw Funds</div><div class="field"><label>AMOUNT TO WITHDRAW (UGX)</label><input name="amount" type="number" min="10000" step="1000" placeholder="Enter amount" required></div><div class="muted small">Minimum withdrawal request: UGX 10,000</div>{% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash">{{m}}</div>{% endfor %}{% endwith %}<button class="btn full">Submit Withdrawal Request</button></form></main>{% include "nav.html" %}{% endblock %}
+{% extends "base.html" %}
+{% from "icons.html" import icon %}
+{% block title %}Withdrawal · BitForge{% endblock %}
+{% block body %}
+<main class="wrap content withdrawal-page">
+  <div class="withdraw-heading"><a href="{{ url_for('wallet') }}" aria-label="Back">←</a><h1>Withdrawal</h1><span class="secure-pill">{{ icon('shield',16) }} Secure Payment</span></div>
+  <section class="withdraw-balance"><span>Available Balance</span><strong>UGX {{ "{:,.0f}".format(user.balance) }}</strong><small>✓ &nbsp;Ready to withdraw · Subject to review</small></section>
+  <h2 class="withdraw-section-title">Withdraw Funds</h2>
+  <form class="withdraw-form" method="post">
+    <div class="withdraw-amount-label"><label for="withdraw-amount">Amount to withdraw</label><span>Max: UGX {{ "{:,.0f}".format(user.balance) }}</span></div>
+    <div class="withdraw-input-wrap"><span>UGX</span><input id="withdraw-amount" name="amount" type="number" min="10000" max="{{ user.balance }}" step="1000" placeholder="Enter amount" required></div>
+    <div class="withdraw-note">{{ icon('shield',17) }} Withdrawal requests are reviewed before payment. Never share your PIN.</div>
+    {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}{% endwith %}
+    <button class="withdraw-submit" type="submit">Withdraw Funds</button>
+    <p class="withdraw-disclaimer">Minimum withdrawal request: UGX 10,000. Approval is subject to available balance and review.</p>
+  </form>
+  <section class="withdraw-history"><div class="withdraw-history-head"><h2>Withdrawal History</h2><a href="{{ url_for('orders') }}">See all →</a></div>
+    {% for t in txns %}<div class="withdraw-history-row"><span class="withdraw-history-icon">{{ icon('withdraw',22) }}</span><div class="withdraw-history-copy"><b>{{ t.kind }} · {{ t.status }}</b><small>{{ t.created_at }}</small></div><strong>−UGX {{ "{:,.0f}".format(t.amount) }}</strong></div>
+    {% else %}<p class="withdraw-empty">No withdrawal requests yet.</p>{% endfor %}
+  </section>
+</main>
+{% include "nav.html" %}
+{% endblock %}
