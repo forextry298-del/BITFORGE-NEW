@@ -1,4 +1,4 @@
-import os, sqlite3, shutil
+import os, sqlite3, shutil, secrets
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, g
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -83,6 +83,23 @@ def init_db():
         if "created_at" not in columns:
             conn.execute("ALTER TABLE users ADD COLUMN created_at TEXT")
             conn.execute("UPDATE users SET created_at=CURRENT_TIMESTAMP WHERE created_at IS NULL")
+        if "referral_code" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN referral_code TEXT")
+        if "referred_by" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN referred_by INTEGER")
+        for row in conn.execute("SELECT id FROM users WHERE referral_code IS NULL OR referral_code='' ").fetchall():
+            code = secrets.token_hex(4).upper()
+            conn.execute("UPDATE users SET referral_code=? WHERE id=?", (code, row[0]))
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code ON users(referral_code)")
+        conn.execute("""CREATE TABLE IF NOT EXISTS referral_commissions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            referrer_id INTEGER NOT NULL,
+            referred_user_id INTEGER NOT NULL,
+            deposit_transaction_id INTEGER NOT NULL UNIQUE,
+            deposit_amount REAL NOT NULL,
+            commission_amount REAL NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )""")
 
         conn.execute("""CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -139,6 +156,7 @@ def index():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    invite_code = (request.args.get("ref") or request.form.get("referral_code") or "").strip().upper()
     if request.method == "POST":
         name = request.form.get("full_name", "").strip()
         phone = normalize_phone(request.form.get("phone", ""))
@@ -160,10 +178,17 @@ def register():
                     flash("That phone number is already registered. Please sign in.")
                     return render_template("register.html")
                 country = request.form.get("country", "Uganda").strip() or "Uganda"
+                inviter = None
+                if invite_code:
+                    inviter_row = db().execute("SELECT id FROM users WHERE referral_code=?", (invite_code,)).fetchone()
+                    if inviter_row:
+                        inviter = inviter_row["id"]
                 db().execute(
-                    "INSERT INTO users(full_name, country, phone, password_hash, created_at) VALUES(?,?,?,?,CURRENT_TIMESTAMP)",
-                    (name, country, phone, generate_password_hash(password))
+                    "INSERT INTO users(full_name, country, phone, password_hash, referred_by, created_at) VALUES(?,?,?,?,?,CURRENT_TIMESTAMP)",
+                    (name, country, phone, generate_password_hash(password), inviter)
                 )
+                new_id = db().execute("SELECT last_insert_rowid()").fetchone()[0]
+                db().execute("UPDATE users SET referral_code=? WHERE id=?", (secrets.token_hex(4).upper(), new_id))
                 db().commit()
                 flash("Registration successful. Please sign in.")
                 return redirect(url_for("login"))
@@ -171,7 +196,7 @@ def register():
                 db().rollback()
                 print("[BITFORGE] Registration constraint error:", error, flush=True)
                 flash("Registration could not be completed. Please check your details.")
-    return render_template("register.html")
+    return render_template("register.html", invite_code=invite_code)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -398,7 +423,57 @@ def orders():
 @login_required
 def account():
     user = db().execute("SELECT * FROM users WHERE id=?", (session["user_id"],)).fetchone()
-    return render_template("account.html", user=user)
+    invite_count = db().execute("SELECT COUNT(*) FROM users WHERE referred_by=?", (session["user_id"],)).fetchone()[0]
+    commission_total = db().execute("SELECT COALESCE(SUM(commission_amount),0) FROM referral_commissions WHERE referrer_id=?", (session["user_id"],)).fetchone()[0]
+    invite_url = request.url_root.rstrip("/") + url_for("register", ref=user["referral_code"])
+    return render_template("account.html", user=user, invite_count=invite_count,
+                           commission_total=commission_total, invite_url=invite_url)
+
+@app.route("/invite")
+@login_required
+def invite():
+    user = db().execute("SELECT * FROM users WHERE id=?", (session["user_id"],)).fetchone()
+    invite_count = db().execute("SELECT COUNT(*) FROM users WHERE referred_by=?", (session["user_id"],)).fetchone()[0]
+    commission_total = db().execute("SELECT COALESCE(SUM(commission_amount),0) FROM referral_commissions WHERE referrer_id=?", (session["user_id"],)).fetchone()[0]
+    invite_url = request.url_root.rstrip("/") + url_for("register", ref=user["referral_code"])
+    return render_template("invite.html", user=user, invite_count=invite_count,
+                           commission_total=commission_total, invite_url=invite_url)
+
+@app.route("/admin/deposits", methods=["GET", "POST"])
+def admin_deposits():
+    expected = os.environ.get("BITFORGE_ADMIN_CHAT_KEY", "")
+    if not expected:
+        return "Admin deposits are disabled: configure BITFORGE_ADMIN_CHAT_KEY.", 503
+    if request.method == "POST" and request.form.get("admin_key"):
+        if secrets.compare_digest(request.form.get("admin_key", ""), expected):
+            session["bitforge_chat_admin"] = True
+        else:
+            flash("Invalid admin key.")
+        return redirect(url_for("admin_deposits"))
+    if not session.get("bitforge_chat_admin"):
+        return render_template("admin_chat_login.html")
+    if request.method == "POST":
+        txid = request.form.get("transaction_id", type=int)
+        tx = db().execute("SELECT * FROM transactions WHERE id=? AND kind LIKE 'Deposit%' AND status='Pending verification'", (txid,)).fetchone()
+        if tx:
+            db().execute("UPDATE users SET balance=balance+? WHERE id=?", (tx["amount"], tx["user_id"]))
+            db().execute("UPDATE transactions SET status='Completed' WHERE id=?", (txid,))
+            ref = db().execute("SELECT referred_by FROM users WHERE id=?", (tx["user_id"],)).fetchone()
+            if ref and ref["referred_by"]:
+                commission = round(float(tx["amount"]) * 0.25, 2)
+                cur = db().execute("INSERT OR IGNORE INTO referral_commissions(referrer_id,referred_user_id,deposit_transaction_id,deposit_amount,commission_amount) VALUES(?,?,?,?,?)",
+                                   (ref["referred_by"], tx["user_id"], txid, tx["amount"], commission))
+                if cur.rowcount:
+                    db().execute("UPDATE users SET balance=balance+? WHERE id=?", (commission, ref["referred_by"]))
+                    db().execute("INSERT INTO transactions(user_id,kind,amount,status) VALUES(?,?,?,'Completed')",
+                                 (ref["referred_by"], "Level 1 referral commission (25%)", commission))
+            db().commit()
+            flash("Deposit verified and wallet credited. Any eligible Level 1 commission was also credited.")
+        else:
+            flash("Pending deposit not found, or it has already been processed.")
+        return redirect(url_for("admin_deposits"))
+    pending = db().execute("SELECT t.*,u.full_name,u.phone FROM transactions t JOIN users u ON u.id=t.user_id WHERE t.kind LIKE 'Deposit%' AND t.status='Pending verification' ORDER BY t.id").fetchall()
+    return render_template("admin_deposits.html", pending=pending)
 
 init_db()
 try:

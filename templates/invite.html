@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% from "icons.html" import icon %}{% block title %}Invite & Earn · BitForge{% endblock %}{% block body %}
+<main class="wrap content invite-page">
+  <a class="invite-back" href="{{ url_for('account') }}">← Account</a>
+  <section class="invite-hero"><span class="invite-kicker">BITFORGE REFERRALS</span><h1>Invite &amp; Earn</h1><p>Share your invite link. When a referred member makes a deposit that is verified by the admin, you receive a Level 1 commission.</p><div class="invite-rate"><strong>25%</strong><span>LEVEL 1 COMMISSION</span></div></section>
+  <div class="invite-stats"><div><small>People invited</small><strong>{{ invite_count }}</strong></div><div><small>Commissions earned</small><strong>UGX {{ "{:,.0f}".format(commission_total) }}</strong></div></div>
+  <section class="card invite-link-card"><h2>Your invitation link</h2><div class="invite-code">{{ user.referral_code }}</div><input id="inviteLink" readonly value="{{ invite_url }}" aria-label="Invitation link"><button class="btn full" type="button" onclick="navigator.clipboard.writeText(document.getElementById('inviteLink').value).then(()=>this.textContent='COPIED')">Copy invitation link</button></section>
+  <section class="card invite-rules"><h3>How it works</h3><ol><li>Share your personal invitation link.</li><li>Your friend registers using that link.</li><li>After their deposit is received and verified, 25% of that deposit is credited to your wallet balance.</li></ol><p>Only one Level 1 referral tier applies. Pending or rejected deposits do not earn commission.</p></section>
+</main>{% include "nav.html" %}{% endblock %}

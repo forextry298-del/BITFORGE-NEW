@@ -2,16 +2,16 @@
 {% from "icons.html" import icon %}
 {% block title %}My Account · BitForge{% endblock %}
 {% block body %}
-<main class="wrap content account-page">
-  <div class="account-heading"><div><span class="eyebrow">BITFORGE ACCOUNT</span><h1>Account</h1></div><div class="account-edit-mark">{{ icon('account',25) }}</div></div>
+<main class="wrap content account-page account-clean">
   <section class="profile-card">
-    <div class="profile-top"><div class="profile-avatar">{{ (user.full_name or 'B')[:1]|upper }}</div><div class="profile-identity"><h2>{{ user.full_name }}</h2><p>{{ user.phone }}</p><span class="profile-status"><i></i> Account profile</span></div></div>
     <div class="profile-balance"><span>Wallet Balance</span><strong>UGX {{ "{:,.0f}".format(user.balance) }}</strong><small>{{ icon('wallet',15) }} Available balance · Updated from your wallet</small></div>
     <div class="profile-actions"><a class="profile-deposit" href="{{ url_for('deposit') }}">{{ icon('deposit',20) }} Deposit</a><a class="profile-withdraw" href="{{ url_for('withdraw') }}">{{ icon('withdraw',20) }} Withdrawal</a></div>
   </section>
   <h2 class="account-section-title">Activity</h2>
   <a class="account-menu-row lilac" href="{{ url_for('orders') }}"><span class="account-menu-icon">{{ icon('orders',23) }}</span><span>Transaction History</span><b>›</b></a>
   <div class="account-menu-row lilac"><span class="account-menu-icon">{{ icon('shield',23) }}</span><span>Secure Payment<small>Protect your account details</small></span><em>Protected</em></div>
+  <h2 class="account-section-title">Invite &amp; Earn</h2>
+  <a class="account-menu-row invite-menu" href="{{ url_for('invite') }}"><span class="account-menu-icon">{{ icon('users',23) }}</span><span>Invite friends and earn<small>Level 1 commission · 25%</small></span><strong>{{ invite_count }}</strong><b>›</b></a>
   <h2 class="account-section-title">General</h2>
   <a class="account-menu-row neutral" href="{{ url_for('account') }}"><span class="account-menu-icon">{{ icon('settings',23) }}</span><span>Account Details<small>{{ user.phone }}</small></span><b>›</b></a>
   <a class="account-menu-row neutral" href="{{ url_for('wallet') }}"><span class="account-menu-icon">{{ icon('wallet',23) }}</span><span>My Wallet<small>View balance and payment requests</small></span><b>›</b></a>
