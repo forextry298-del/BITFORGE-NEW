@@ -17,9 +17,9 @@ if not os.path.exists(DB) and os.path.isfile(LEGACY_DB) and os.path.abspath(DB) 
 
 
 PRODUCTS = [
-    {"id": 1, "name": "BITCOIN MINER · SHA-256", "category": "SHA-256", "description": "Bitcoin SHA-256 mining rig · pool connection required", "minimum": 5000, "maximum": 100000, "daily_projection": "Pool earnings only", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "mining_rig_robot.jpg", "hashrate": "Pool-reported only"},
-    {"id": 2, "name": "BITCOIN MINER · ASIC PRO", "category": "ASIC PRO", "description": "ASIC Bitcoin mining equipment · pool connection required", "minimum": 150000, "maximum": 1000000, "daily_projection": "Pool earnings only", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "bitcoin_mining_robot.jpg", "hashrate": "Pool-reported only"},
-    {"id": 3, "name": "BITCOIN MINER · HYDRO MAX", "category": "HYDRO MAX", "description": "High-capacity mining facility · pool connection required", "minimum": 2000000, "maximum": 5000000, "daily_projection": "Pool earnings only", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "industrial_mining_robot.jpg", "hashrate": "Pool-reported only"},
+    {"id": 1, "name": "BITCOIN MINER · SHA-256", "category": "SHA-256", "description": "Bitcoin SHA-256 mining rig · pool connection required", "minimum": 5000, "maximum": 100000, "daily_rate": 20.0, "daily_projection": "Pool-reported only; scenario rate 20% is not a mining guarantee", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "mining_rig_robot.jpg", "hashrate": "Pool-reported only"},
+    {"id": 2, "name": "BITCOIN MINER · ASIC PRO", "category": "ASIC PRO", "description": "ASIC Bitcoin mining equipment · pool connection required", "minimum": 150000, "maximum": 1000000, "daily_rate": 34.0, "daily_projection": "Pool-reported only; scenario rate 34% is not a mining guarantee", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "bitcoin_mining_robot.jpg", "hashrate": "Pool-reported only"},
+    {"id": 3, "name": "BITCOIN MINER · HYDRO MAX", "category": "HYDRO MAX", "description": "High-capacity mining facility · pool connection required", "minimum": 2000000, "maximum": 5000000, "daily_rate": 47.6, "daily_projection": "Pool-reported only; scenario rate 47.6% is not a mining guarantee", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "industrial_mining_robot.jpg", "hashrate": "Pool-reported only"},
 ]
 
 def db():

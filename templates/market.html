@@ -22,7 +22,8 @@
       <div class="market-product-info">
         <h2>{{ p.name }}</h2><p class="market-description">{{ p.description }}</p>
         <p>Activation range · <strong>UGX {{ "{:,.0f}".format(p.minimum) }}–{{ "{:,.0f}".format(p.maximum) }}</strong></p>
-        <p>Earnings · <strong>{{ p.daily_projection }}</strong></p>
+        <p>Daily scenario rate · <strong>{{ p.daily_rate }}%</strong></p>
+        <p>Actual mining payout · <strong>Verified pool earnings only</strong></p>
         <p>Mining period · <strong>4549 days</strong></p>
         <p>Wallet check · <strong>Required before request</strong></p>
         <div class="market-product-bottom mining-product-bottom">
@@ -31,14 +32,33 @@
             <input id="mine-amount-{{ p.id }}" name="amount" type="number" min="{{ p.minimum }}" max="{{ p.maximum }}" step="1" placeholder="Enter UGX" required>
             <button type="submit">START MINING</button>
           </form>
-          <small class="daily-preview" id="daily-preview-{{ p.id }}">Pool-reported earnings appear after connection</small>
+          <small class="daily-preview" id="daily-preview-{{ p.id }}">Enter an amount to calculate the daily scenario estimate.</small>
         </div>
       </div>
     </article>
   {% else %}<p class="card muted">No mining rigs match this category.</p>{% endfor %}
   </section>
-  <section class="projection-notice mining-notice" id="mining-notice"><strong>Live mining connection status</strong><p>Mining hardware imagery is illustrative until physical equipment and a verified mining-pool account are connected. This release does not claim live hashrate, daily BTC earnings, or automatic payouts. Mining activation is deliberately blocked until a pool API, worker identity, payout address, and verified pool settlement records are configured. Wallet balance checks are performed, but no funds are deducted and no earnings are fabricated. The 4549-day term is a configured display period, not a guarantee of mining output.</p></section>
+  <section class="projection-notice mining-notice" id="mining-notice"><strong>Live mining connection status</strong><p>The displayed 20%, 34%, and 47.6% rates are user-requested scenario calculations only, not verified Bitcoin mining yields, promises, or guaranteed returns. The daily UGX figure updates from the amount entered and is labelled as an illustration. Actual BTC earnings must come from verified mining-pool settlement records. Mining hardware imagery is illustrative until physical equipment and a verified mining-pool account are connected. This release does not claim live hashrate, daily BTC earnings, or automatic payouts. Mining activation is deliberately blocked until a pool API, worker identity, payout address, and verified pool settlement records are configured. Wallet balance checks are performed, but no funds are deducted and no earnings are fabricated. The 4549-day term is a configured display period, not a guarantee of mining output.</p></section>
 </main>
 
 {% include "nav.html" %}
+<script>
+document.querySelectorAll(".mine-form").forEach(function(form){
+  const input=form.querySelector('input[name="amount"]');
+  const rate=Number(form.dataset.rate || 0);
+  const preview=form.parentElement.querySelector(".daily-preview");
+  if(!input || !preview) return;
+  const money=n=>"UGX "+Math.round(n).toLocaleString("en-US");
+  function update(){
+    const amount=Number(input.value);
+    if(!input.value || !Number.isFinite(amount) || amount<=0){
+      preview.textContent="Daily scenario estimate · "+rate+"% · enter amount";
+      return;
+    }
+    preview.textContent="Illustrative daily calculation: "+rate+"% × "+money(amount)+" = "+money(amount*rate/100)+" / day (not actual pool earnings)";
+  }
+  input.addEventListener("input",update);
+  update();
+});
+</script>
 {% endblock %}
