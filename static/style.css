@@ -432,3 +432,30 @@ body{background:var(--page);color:var(--ink);font-size:15px}
 .payout-phone-field{margin:12px 0}
 .payout-phone-field input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #d9dce3;border-radius:13px;font:inherit;font-size:15px}
 .content h1,.content .page-title{font-size:clamp(22px,5.5vw,28px)!important;line-height:1.15}
+
+
+/* BitForge dark auth screens based on the supplied mobile reference */
+.auth-dark-page{min-height:100svh;box-sizing:border-box;align-items:center;padding:28px 18px 42px;background:radial-gradient(ellipse at 50% 0%,#17112c 0%,#08090e 48%,#050608 100%);color:#f7f7fb}
+.auth-dark{max-width:430px}
+.auth-dark .auth-head{margin-bottom:26px}
+.auth-dark .auth-logo{width:58px;height:58px;border-radius:18px;background:linear-gradient(145deg,#8538ed,#4937d8);box-shadow:0 8px 26px #6535df55;color:#fff;font-size:31px}
+.auth-dark .auth-head h1{font-size:27px;letter-spacing:-.6px;color:#fff}
+.auth-dark .auth-head .sub{font-size:14px;color:#a7a6b2}
+.auth-dark-panel{padding:22px 20px 23px;border-radius:27px;background:rgba(17,17,25,.96);border:1px solid #30303b;box-shadow:0 18px 45px #0008}
+.auth-dark-panel .field{margin-bottom:17px}
+.auth-dark-panel .field label{display:block;margin:0 0 8px;color:#858492;font-size:11px;font-weight:850;letter-spacing:1.5px}
+.auth-dark-panel .optional-label{font-weight:500;letter-spacing:0;text-transform:none}
+.auth-dark-panel .field input,.auth-dark-panel .field select{height:57px;box-sizing:border-box;border-radius:17px;padding:0 15px;background:#08080b;border:1px solid #292932;color:#f6f5fa;font-size:16px}
+.auth-dark-panel .field input::placeholder{color:#666570;opacity:1}
+.auth-dark-panel .field input:focus,.auth-dark-panel .field select:focus{border-color:#7650e8;box-shadow:0 0 0 3px #7544ed24}
+.phone-entry,.password-entry{height:57px;display:flex;align-items:center;overflow:hidden;border:1px solid #292932;border-radius:17px;background:#08080b}
+.phone-entry>span{flex:0 0 auto;padding:0 13px 0 15px;border-right:1px solid #30303a;color:#e5e3ed;font-size:16px;font-weight:750}
+.auth-dark-panel .phone-entry input,.auth-dark-panel .password-entry input{height:100%;min-width:0;flex:1;border:0;border-radius:0;background:transparent;box-shadow:none;padding:0 13px}
+.auth-dark-panel .phone-entry:focus-within,.auth-dark-panel .password-entry:focus-within{border-color:#7650e8;box-shadow:0 0 0 3px #7544ed24}
+.show-password{height:100%;padding:0 14px;border:0;background:transparent;color:#858492;font-size:10px;font-weight:850;letter-spacing:.7px}
+.auth-dark-panel .auth-submit{min-height:55px;margin-top:3px;border:0;border-radius:16px;background:linear-gradient(105deg,#8034e8,#4d3de4);color:#fff;font-size:16px;font-weight:850;box-shadow:0 8px 22px #5c35dc38}
+.auth-dark-panel .auth-foot{margin-top:20px;color:#858492;font-size:13px}
+.auth-dark-panel .auth-foot a{color:#a78bff}
+.auth-dark-panel .flash{padding:10px 12px;margin:8px 0 12px;border:1px solid #70404a;border-radius:11px;background:#321b25;color:#ffc3ca;font-size:12px}
+.auth-login-page{padding-top:54px}
+@media(max-width:380px){.auth-dark-page{padding:22px 13px 32px}.auth-dark-panel{padding:19px 16px}.auth-dark .auth-head h1{font-size:25px}}

@@ -170,8 +170,8 @@ def index():
 def register():
     invite_code = (request.args.get("ref") or request.form.get("referral_code") or "").strip().upper()
     if request.method == "POST":
-        name = request.form.get("full_name", "").strip()
         phone = normalize_phone(request.form.get("phone", ""))
+        name = request.form.get("full_name", "").strip() or phone or "BitForge Member"
         password = request.form.get("password", "")
         confirm = request.form.get("confirm_password", "")
         if not name or not phone or not password:

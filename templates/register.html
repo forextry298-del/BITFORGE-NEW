@@ -1,1 +1,25 @@
-{% extends "base.html" %}{% block title %}Create account · BitForge{% endblock %}{% block body %}<main class="auth-page"><div class="auth"><div class="auth-head"><div class="auth-logo">B</div><h1>Create Account</h1><div class="sub">Join BitForge to explore the marketplace.</div></div><form class="auth-panel" method="post"><input type="hidden" name="referral_code" value="{{ invite_code or '' }}"><div class="field"><label>FULL NAME</label><input name="full_name" placeholder="Enter your full name" required autocomplete="name"></div><div class="field"><label>COUNTRY</label><select name="country"><option>🇺🇬 Uganda</option></select></div><div class="field"><label>PHONE NUMBER</label><input name="phone" type="tel" placeholder="+256 700 123456" required autocomplete="tel"></div><div class="field"><label>PASSWORD</label><input name="password" type="password" placeholder="Create password (6+ characters)" required minlength="6"></div><div class="field"><label>CONFIRM PASSWORD</label><input name="confirm_password" type="password" placeholder="Confirm password" required></div>{% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash">{{m}}</div>{% endfor %}{% endwith %}<button class="btn full" type="submit">Create Account</button><div class="auth-foot">Already have an account? <a href="{{url_for('login')}}">Sign in</a></div></form></div></main>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Create account · BitForge{% endblock %}
+{% block body %}
+<main class="auth-page auth-dark-page">
+  <div class="auth auth-dark">
+    <div class="auth-head">
+      <div class="auth-logo">₿</div>
+      <h1>Join BitForge</h1>
+      <div class="sub">Start your Bitcoin mining account.</div>
+    </div>
+    <form class="auth-panel auth-dark-panel" method="post" autocomplete="on">
+      <input type="hidden" name="full_name" value="BitForge Member">
+      <div class="field"><label>COUNTRY</label><select name="country" aria-label="Country"><option value="Uganda (UGX)" selected>🇺🇬 Uganda (UGX)</option></select></div>
+      <div class="field"><label>PHONE NUMBER</label><div class="phone-entry"><span>+256</span><input name="phone" type="tel" inputmode="numeric" placeholder="700123456" required autocomplete="tel-national" pattern="[0-9 ]{9,12}" title="Enter your 9-digit Ugandan mobile number"></div></div>
+      <div class="field"><label>PASSWORD</label><div class="password-entry"><input id="register-password" name="password" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password"><button type="button" class="show-password" onclick="toggleAuthPassword('register-password',this)">SHOW</button></div></div>
+      <div class="field"><label>CONFIRM PASSWORD</label><input name="confirm_password" type="password" placeholder="Repeat password" required minlength="6" autocomplete="new-password"></div>
+      <div class="field"><label>REFERRAL CODE <span class="optional-label">(optional)</span></label><input name="referral_code" value="{{ invite_code or '' }}" placeholder="Enter referral code" autocomplete="off"></div>
+      {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash">{{m}}</div>{% endfor %}{% endwith %}
+      <button class="btn full auth-submit" type="submit">Create Account</button>
+      <div class="auth-foot">Already have an account? <a href="{{url_for('login')}}">Sign in</a></div>
+    </form>
+  </div>
+</main>
+<script>function toggleAuthPassword(id,button){const field=document.getElementById(id);if(!field)return;const showing=field.type==='text';field.type=showing?'password':'text';button.textContent=showing?'SHOW':'HIDE';}</script>
+{% endblock %}
