@@ -400,15 +400,23 @@ def deposit():
         elif not agent:
             flash("Choose an available deposit agent.")
         else:
-            # This records a pending payment instruction only. Wallet funds are
-            # credited after an administrator verifies the incoming transfer.
+            # Create the pending request immediately when the user selects an agent.
+            # The wallet is credited only after an administrator approves it.
             method = f"Deposit · Agent · {agent['name']} · {agent['phone']}"
-            db().execute("INSERT INTO transactions(user_id,kind,amount,status,payer_phone) VALUES(?,?,?,?,?)",
-                         (session["user_id"], method, amount, "Pending verification", payer_phone))
+            cur = db().execute(
+                "INSERT INTO transactions(user_id,kind,amount,status,payer_phone) VALUES(?,?,?,?,?)",
+                (session["user_id"], method, amount, "Pending verification", payer_phone)
+            )
             db().commit()
-            flash(f"Deposit instruction saved for UGX {amount:,.0f}. Your wallet will be credited after the transfer to {agent['name']} is verified.")
-            return redirect(url_for("orders"))
-    return render_template("deposit.html", agents=agents)
+            return redirect(url_for("deposit", request_id=cur.lastrowid))
+    deposit_request = None
+    request_id = request.args.get("request_id", type=int)
+    if request_id:
+        deposit_request = db().execute(
+            "SELECT * FROM transactions WHERE id=? AND user_id=? AND kind LIKE 'Deposit%'",
+            (request_id, session["user_id"])
+        ).fetchone()
+    return render_template("deposit.html", agents=agents, deposit_request=deposit_request)
 
 @app.route("/withdraw", methods=["GET", "POST"])
 @login_required

@@ -7,6 +7,20 @@
   <div><h1>Deposit</h1><div class="deposit-brand"><span class="deposit-brand-mark">₿</span><strong>BITFORGE MINING</strong><small>SECURE WALLET</small></div></div>
 </header>
 <main class="deposit-page agent-deposit-page">
+  {% if deposit_request %}
+  {% set selected_agent = (agents.values()|selectattr('phone', 'equalto', deposit_request.kind.split(' · ')[-1])|list|first) %}
+  <section class="deposit-section deposit-request-created">
+    <div class="payment-ready-mark">✓</div>
+    <h2>Deposit request created</h2>
+    <p>Your request is now <strong>Pending admin approval</strong>.</p>
+    <div class="send-amount-card"><span>Deposit amount</span><strong>UGX {{ "{:,.0f}".format(deposit_request.amount) }}</strong></div>
+    <div class="chosen-agent-card"><span class="agent-avatar">{{ (selected_agent.name[0] if selected_agent else 'A') }}</span><div><strong>{{ selected_agent.name if selected_agent else 'Selected agent' }}</strong><b>{{ deposit_request.kind.split(' · ')[-1] }}</b><small>Send money to this agent</small></div></div>
+    <p>Sender number: <strong>{{ deposit_request.payer_phone }}</strong></p>
+    <p>Send the exact amount to the selected agent. Your wallet will be credited only after the admin confirms receipt.</p>
+    <p class="deposit-notice">Request #{{ deposit_request.id }} · Pending verification</p>
+    <a class="deposit-submit" href="{{ url_for('orders') }}">VIEW REQUEST STATUS</a>
+  </section>
+  {% else %}
   <form method="post" id="depositForm" class="deposit-form">
     <section class="deposit-section agent-step" id="amountStep">
       <h2>₿ Add funds to your mining wallet</h2>
@@ -31,46 +45,30 @@
         </label>
         {% endfor %}
         <p class="agent-secure-note">Choose the recipient carefully. Confirm the displayed name and number before sending money.</p>
-        <button class="deposit-submit agent-choose-button" id="chooseAgentButton" type="button" disabled>CONTINUE</button>
+        <button class="deposit-submit agent-choose-button" id="chooseAgentButton" type="submit" disabled>CHOOSE AGENT & CREATE REQUEST</button>
       </div>
     </section>
 
-    <section class="agent-step agent-payment" id="paymentStep" hidden>
-      <div class="agent-processing" id="processingState"><span class="agent-spinner"></span><strong>Processing...</strong><small>Preparing your payment instructions</small></div>
-      <div id="paymentDetails" hidden>
-        <div class="payment-ready-mark">✓</div>
-        <h2>Send money to this agent</h2>
-        <p class="payment-intro">Use your mobile money menu to send the exact amount below.</p>
-        <div class="chosen-agent-card"><span class="agent-avatar" id="chosenAvatar">S</span><div><strong id="chosenName">Agent name</strong><b id="chosenPhone">07XXXXXXXX</b><small>BitForge deposit agent</small></div></div>
-        <div class="send-amount-card"><span>Amount to send</span><strong id="chosenAmount">UGX 0</strong></div>
-        <ol class="agent-instructions"><li>Open MTN or Airtel Mobile Money.</li><li>Select Send Money and enter the agent's number above.</li><li>Confirm the recipient name and send the exact amount.</li><li>Return here and confirm that you have sent it.</li></ol>
-        <label class="agent-confirm-check"><input type="checkbox" id="sentConfirmation"> <span>I have sent the money to the selected agent.</span></label>
-        <button class="deposit-submit" id="submitDeposit" type="submit" disabled>I've sent the money</button>
-        <p class="deposit-notice">Your request remains pending until an administrator verifies the payment. BitForge will not credit your wallet based on this button alone.</p>
-      </div>
-    </section>
     {% with messages=get_flashed_messages() %}{% for message in messages %}<div class="flash">{{ message }}</div>{% endfor %}{% endwith %}
     <p class="deposit-terms">Secure agent-assisted deposit · BitForge Mining</p>
   </form>
+  {% endif %}
 </main>
 {% include "nav.html" %}
 <script>
 (() => {
+  const form = document.getElementById('depositForm');
+  if (!form) return;
   const amount = document.getElementById('depositAmount');
   const summary = document.getElementById('summaryAmount');
   const total = document.getElementById('summaryTotal');
   const format = value => 'UGX ' + Math.max(0, Math.floor(Number(value) || 0)).toLocaleString('en-UG');
   const amountStep = document.getElementById('amountStep');
   const agentStep = document.getElementById('agentStep');
-  const paymentStep = document.getElementById('paymentStep');
   const continueButton = document.getElementById('continueButton');
   const agentList = document.getElementById('agentList');
   const searching = document.getElementById('searchingState');
   const chooseButton = document.getElementById('chooseAgentButton');
-  const processing = document.getElementById('processingState');
-  const paymentDetails = document.getElementById('paymentDetails');
-  const confirmation = document.getElementById('sentConfirmation');
-  const submit = document.getElementById('submitDeposit');
   const agents = {
     agent_shakira: {name:'Shakira Nantongo', phone:'0758878297'},
     agent_mary: {name:'Mary Namara', phone:'0757837051'}
@@ -88,19 +86,12 @@
     document.querySelectorAll('.agent-card').forEach(c=>c.classList.toggle('selected',c.querySelector('input').checked));
     chooseButton.disabled=!document.querySelector('input[name="agent"]:checked');
   }));
-  chooseButton.addEventListener('click',()=>{
-    const selected=document.querySelector('input[name="agent"]:checked'); if(!selected)return;
-    const agent=agents[selected.value]; if(!agent)return;
-    document.getElementById('chosenName').textContent=agent.name;
-    document.getElementById('chosenPhone').textContent=agent.phone;
-    document.getElementById('chosenAvatar').textContent=agent.name.charAt(0);
-    document.getElementById('chosenAmount').textContent=format(amount.value);
-    agentStep.hidden=true;paymentStep.hidden=false;processing.hidden=false;paymentDetails.hidden=true;
-    window.setTimeout(()=>{processing.hidden=true;paymentDetails.hidden=false},650);
-  });
-  confirmation.addEventListener('change',()=>submit.disabled=!confirmation.checked);
-  document.getElementById('depositForm').addEventListener('submit',event=>{
-    if(!document.querySelector('input[name="agent"]:checked') || !confirmation.checked){event.preventDefault()}
+  form.addEventListener('submit',event=>{
+    const selected=document.querySelector('input[name="agent"]:checked');
+    const payer=document.getElementById('payerPhone');
+    if(!amount.value || Number(amount.value)<10000 || !payer.value.trim() || !selected){event.preventDefault();return}
+    chooseButton.disabled=true;
+    chooseButton.textContent='CREATING PENDING REQUEST...';
   });
 })();
 </script>
