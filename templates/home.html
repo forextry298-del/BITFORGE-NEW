@@ -47,29 +47,29 @@
     <div><span class="benefit-icon">▣</span><span><b>Account access</b><small>Anytime, anywhere</small></span></div>
   </section>
 
-  <nav class="category-pills" aria-label="Project categories">
+  <nav class="category-pills mining-home-pills" aria-label="Mining rig categories">
     <a class="chosen" href="{{ url_for('market') }}">Explore All</a>
-    <a href="{{ url_for('market',category='Solar') }}">Solar</a>
-    <a href="{{ url_for('market',category='Real Estate') }}">Real Estate</a>
-    <a href="{{ url_for('market',category='Green Energy') }}">Green Energy</a>
+    <a href="{{ url_for('market',category='SHA-256') }}">SHA-256</a>
+    <a href="{{ url_for('market',category='ASIC PRO') }}">ASIC PRO</a>
+    <a href="{{ url_for('market',category='HYDRO MAX') }}">HYDRO MAX</a>
   </nav>
 
-  <section class="section-heading">
-    <div><h2>Mining rigs</h2><p>Explore available mining hardware</p></div>
+  <section class="section-heading mining-home-heading">
+    <div><h2>Mining rigs</h2><p>Explore available Bitcoin mining hardware</p></div>
     <a href="{{ url_for('market') }}">See all <span>→</span></a>
   </section>
 
-  <section class="featured-list">
+  <section class="featured-list mining-home-list">
     {% for p in products %}
-    <article class="featured-card">
+    <article class="featured-card mining-home-card">
       <a class="featured-image" href="{{ url_for('market') }}"><img src="{{ url_for('static',filename='images/'+p.image) }}" alt="{{ p.name }}"></a>
       <div class="featured-info">
         <span class="category-tag">{{ p.category }}</span>
         <h3>{{ p.name }}</h3>
         <p class="description">{{ p.description }}</p>
-        <p class="muted detail-line">{{ p.duration }} <span>•</span> {{ p.risk }} risk</p>
+        <p class="muted detail-line">Mining period · {{ p.duration }}</p>
         <div class="price-line"><span>Minimum amount</span><strong>UGX {{ "{:,.0f}".format(p.minimum) }}</strong></div>
-        <a class="add-button" href="{{ url_for('market') }}">View project</a>
+        <a class="add-button" href="{{ url_for('market') }}">View mining area</a>
       </div>
     </article>
     {% endfor %}
@@ -98,7 +98,7 @@
       <p class="empty-activity">Your recent transactions will appear here.</p>
     {% endfor %}
   </section>
-  <p class="disclaimer">Mining imagery is illustrative. Live Bitcoin mining requires connected hardware and a verified pool. Wallet credits are made only against confirmed transactions.</p>
+  <section class="home-mining-instructions"><strong>Deposit funds and choose a mining area</strong><p>After purchase, verified mining earnings are credited to your balance at 00:00 (midnight), once confirmed settlement data is received from the connected mining pool.</p></section>
 </main>
 {% include "nav.html" %}
 <script>
