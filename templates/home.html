@@ -13,115 +13,52 @@
   </div>
 </header>
 
-<main class="wrap content home-content">
-  <form class="search-bar" action="{{ url_for('market') }}" method="get">
-    <span class="search-icon">{{ icon("search",25) }}</span>
-    <input name="q" type="search" placeholder="Search projects..." aria-label="Search projects">
-    <button type="submit">Search</button>
-  </form>
-
-  <section class="hero-slider" aria-label="Featured Bitcoin mining facility">
-    <article class="hero-slide active">
-      <img src="{{ url_for('static',filename='images/mining_rig_robot.jpg') }}" alt="Modern commercial office building">
-      <div class="hero-overlay"></div>
-      <div class="hero-text"><span class="hero-kicker">BITFORGE MINING FACILITY</span><h1>Bitcoin mining infrastructure.</h1><p>Explore the mining hardware environment and account tools.</p><a href="{{ url_for('market') }}">Explore mining <span>→</span></a></div>
-    </article>
-    <article class="hero-slide">
-      <img src="{{ url_for('static',filename='images/bitcoin_mining_robot.jpg') }}" alt="Solar farm in a sunny landscape">
-      <div class="hero-overlay"></div>
-      <div class="hero-text"><span class="hero-kicker">SHA-256 MINING</span><h1>Mining hardware and compute.</h1><p>View mining rigs and pool connection status.</p><a href="{{ url_for('market',category='Solar') }}">Explore rigs <span>→</span></a></div>
-    </article>
-    <article class="hero-slide">
-      <img src="{{ url_for('static',filename='images/industrial_mining_robot.jpg') }}" alt="Wind turbines and renewable energy facility">
-      <div class="hero-overlay"></div>
-      <div class="hero-text"><span class="hero-kicker">MINING OPERATIONS</span><h1>Track verified mining activity.</h1><p>Earnings appear only after verified pool settlement.</p><a href="{{ url_for('market',category='Green Energy') }}">Explore mining <span>→</span></a></div>
-    </article>
-    <button class="slider-arrow slider-prev" type="button" aria-label="Previous slide">‹</button>
-    <button class="slider-arrow slider-next" type="button" aria-label="Next slide">›</button>
-    <div class="slider-dots"><button class="current" type="button" aria-label="Slide 1"></button><button type="button" aria-label="Slide 2"></button><button type="button" aria-label="Slide 3"></button></div>
+<main class="wrap content home-content mining-dashboard">
+  <section class="mining-dashboard-hero">
+    <div class="mining-dashboard-brand"><span class="dashboard-btc">₿</span><div><b>BITFORGE</b><small>BITCOIN MINING PLATFORM</small></div><span class="network-pill"><i></i> POOL STATUS</span></div>
+    <div class="dashboard-hero-copy"><span class="dashboard-eyebrow">MINING CONTROL CENTER</span><h1>Power your<br>Bitcoin mining.</h1><p>Choose a mining rig, review its terms and monitor verified pool activity.</p><a href="{{ url_for('market') }}">Explore mining rigs <span>→</span></a></div>
+    <img class="dashboard-hero-image" src="{{ url_for('static',filename='images/bitcoin_mining_robot.jpg') }}" alt="Illustrative Bitcoin mining equipment">
+    <div class="dashboard-hero-shade"></div>
+    <div class="dashboard-hero-status"><span class="status-dot"></span> Pool connection required for verified earnings</div>
   </section>
 
-  <section class="benefits">
-    <div><span class="benefit-icon">✓</span><span><b>Clear information</b><small>Project details</small></span></div>
-    <div><span class="benefit-icon">⌁</span><span><b>Easy requests</b><small>Simple account tools</small></span></div>
-    <div><span class="benefit-icon">▣</span><span><b>Account access</b><small>Anytime, anywhere</small></span></div>
+  <section class="dashboard-wallet">
+    <div class="dashboard-wallet-top"><span><b>₿</b> MINING WALLET</span><a href="{{ url_for('wallet') }}">Details →</a></div>
+    <small>Available balance</small>
+    <strong>UGX {{ "{:,.0f}".format(user.balance) }}</strong>
+    <div class="dashboard-wallet-actions"><a href="{{ url_for('deposit') }}">↓ <span>Deposit</span></a><a href="{{ url_for('withdraw') }}">↑ <span>Withdraw</span></a></div>
   </section>
 
-  <nav class="category-pills mining-home-pills" aria-label="Mining rig categories">
-    <a class="chosen" href="{{ url_for('market') }}">Explore All</a>
-    <a href="{{ url_for('market',category='SHA-256') }}">SHA-256</a>
-    <a href="{{ url_for('market',category='ASIC PRO') }}">ASIC PRO</a>
-    <a href="{{ url_for('market',category='HYDRO MAX') }}">HYDRO MAX</a>
-  </nav>
-
-  <section class="section-heading mining-home-heading">
-    <div><h2>Mining rigs</h2><p>Explore available Bitcoin mining hardware</p></div>
-    <a href="{{ url_for('market') }}">See all <span>→</span></a>
+  <section class="dashboard-quick">
+    <div class="dashboard-section-title"><div><h2>Mining tools</h2><p>Manage your mining account</p></div></div>
+    <div class="dashboard-tool-grid">
+      <a href="{{ url_for('market') }}"><span>▦</span><b>Mining rigs</b></a>
+      <a href="{{ url_for('wallet') }}"><span>▣</span><b>Wallet</b></a>
+      <a href="{{ url_for('orders') }}"><span>⇅</span><b>Activity</b></a>
+      <a href="{{ url_for('account') }}"><span>⚙</span><b>Account</b></a>
+    </div>
   </section>
 
-  <section class="featured-list mining-home-list">
+  <section class="dashboard-rigs-head"><div><h2>Available mining rigs</h2><p>Select a mining area to view its details</p></div><a href="{{ url_for('market') }}">See all →</a></section>
+  <section class="dashboard-rig-list">
     {% for p in products %}
-    <article class="featured-card mining-home-card">
-      <a class="featured-image" href="{{ url_for('market') }}"><img src="{{ url_for('static',filename='images/'+p.image) }}" alt="{{ p.name }}"></a>
-      <div class="featured-info">
-        <span class="category-tag">{{ p.category }}</span>
-        <h3>{{ p.name }}</h3>
-        <p class="description">{{ p.description }}</p>
-        <p class="muted detail-line">Mining period · {{ p.duration }}</p>
-        <div class="price-line"><span>Minimum amount</span><strong>UGX {{ "{:,.0f}".format(p.minimum) }}</strong></div>
-        <a class="add-button" href="{{ url_for('market') }}">View mining area</a>
-      </div>
+    <article class="dashboard-rig-card">
+      <img src="{{ url_for('static',filename='images/'+p.image) }}" alt="{{ p.name }}">
+      <div class="dashboard-rig-info"><span class="dashboard-rig-tag">{{ p.category }}</span><h3>{{ p.name }}</h3><p>{{ p.description }}</p><small>Minimum activation</small><b>UGX {{ "{:,.0f}".format(p.minimum) }}</b><a href="{{ url_for('market') }}">View mining area →</a></div>
     </article>
     {% endfor %}
   </section>
 
-  <section class="wallet-preview">
-    <div class="wallet-title"><span>MINING WALLET</span><a href="{{ url_for('wallet') }}">Details →</a></div>
-    <p>Total Balance</p>
-    <h2>UGX {{ "{:,.0f}".format(user.balance) }}</h2>
-    <div class="wallet-actions"><a href="{{ url_for('deposit') }}">{{ icon("deposit",21) }}<span>Deposit</span></a><a href="{{ url_for('withdraw') }}">{{ icon("withdraw",21) }}<span>Withdraw</span></a></div>
-  </section>
-
-  <section class="section-heading quick-heading"><div><h2>Quick access</h2><p>Manage your BitForge account</p></div></section>
-  <section class="quick-links">
-    <a href="{{ url_for('wallet') }}">{{ icon("wallet",27) }}<small>Wallet</small></a>
-    <a href="{{ url_for('deposit') }}">{{ icon("deposit",27) }}<small>Deposit</small></a>
-    <a href="{{ url_for('withdraw') }}">{{ icon("withdraw",27) }}<small>Withdraw</small></a>
-    <a href="{{ url_for('orders') }}">{{ icon("orders",27) }}<small>Orders</small></a>
-  </section>
-
-  <section class="section-heading activity-heading"><div><h2>Recent activity</h2><p>Your latest account requests</p></div><a href="{{ url_for('orders') }}">See all →</a></section>
+  <section class="dashboard-activity-head"><div><h2>Recent activity</h2><p>Your latest account requests</p></div><a href="{{ url_for('orders') }}">See all →</a></section>
   <section class="activity-card">
     {% for t in txns %}
       <div class="activity-row"><span class="activity-symbol {% if 'Deposit' in t.kind %}deposit-symbol{% elif 'Withdrawal' in t.kind %}withdraw-symbol{% else %}other-symbol{% endif %}">{% if 'Deposit' in t.kind %}+{% elif 'Withdrawal' in t.kind %}−{% else %}▣{% endif %}</span><div class="activity-main"><b>{{ t.kind }}</b><small>{{ t.created_at }} · {{ t.status }}</small></div><strong>UGX {{ "{:,.0f}".format(t.amount) }}</strong></div>
     {% else %}
-      <p class="empty-activity">Your recent transactions will appear here.</p>
+      <p class="empty-activity">Your recent account activity will appear here.</p>
     {% endfor %}
   </section>
-  <section class="home-mining-instructions"><strong>Deposit funds and choose a mining area</strong><p>After purchase, verified mining earnings are credited to your balance at 00:00 (midnight), once confirmed settlement data is received from the connected mining pool.</p></section>
+  <section class="dashboard-midnight-note"><b>Deposit funds and choose a mining area</b><p>Verified mining-pool earnings, if available, are credited at 00:00 (midnight) after settlement confirmation. No live mining yield is displayed until a pool is connected.</p></section>
 </main>
 {% include "nav.html" %}
-<script>
-(() => {
-  const slides = Array.from(document.querySelectorAll('.hero-slide'));
-  const dots = Array.from(document.querySelectorAll('.slider-dots button'));
-  if (!slides.length) return;
-  let active = 0, timer;
-  function show(index) {
-    active = (index + slides.length) % slides.length;
-    slides.forEach((slide, i) => slide.classList.toggle('active', i === active));
-    dots.forEach((dot, i) => dot.classList.toggle('current', i === active));
-  }
-  function restart() { clearInterval(timer); timer = setInterval(() => show(active + 1), 5000); }
-  document.querySelector('.slider-prev').addEventListener('click', () => { show(active - 1); restart(); });
-  document.querySelector('.slider-next').addEventListener('click', () => { show(active + 1); restart(); });
-  dots.forEach((dot, i) => dot.addEventListener('click', () => { show(i); restart(); }));
-  restart();
-})();
-const menuButton = document.getElementById('menuButton');
-const menuPopover = document.getElementById('menuPopover');
-menuButton.addEventListener('click', () => menuPopover.classList.toggle('open'));
-document.addEventListener('click', e => { if (!menuPopover.contains(e.target) && !menuButton.contains(e.target)) menuPopover.classList.remove('open'); });
-document.getElementById('darkModeButton').addEventListener('click', () => document.body.classList.toggle('dark-mode'));
-</script>
+
 {% endblock %}
