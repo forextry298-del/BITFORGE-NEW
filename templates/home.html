@@ -32,10 +32,10 @@
   <section class="dashboard-quick">
     <div class="dashboard-section-title"><div><h2>Mining tools</h2><p>Manage your mining account</p></div></div>
     <div class="dashboard-tool-grid">
-      <a href="{{ url_for('market') }}"><span>▦</span><b>Mining rigs</b></a>
-      <a href="{{ url_for('wallet') }}"><span>▣</span><b>Wallet</b></a>
-      <a href="{{ url_for('orders') }}"><span>⇅</span><b>Activity</b></a>
-      <a href="{{ url_for('account') }}"><span>⚙</span><b>Account</b></a>
+      <a href="{{ url_for('market') }}"><span>{{ icon('mining',25) }}</span><b>Mining rigs</b></a>
+      <a href="{{ url_for('wallet') }}"><span>{{ icon('wallet',25) }}</span><b>Wallet</b></a>
+      <a href="{{ url_for('orders') }}"><span>{{ icon('activity',25) }}</span><b>Activity</b></a>
+      <a href="{{ url_for('account') }}"><span>{{ icon('settings',25) }}</span><b>Account</b></a>
     </div>
   </section>
 

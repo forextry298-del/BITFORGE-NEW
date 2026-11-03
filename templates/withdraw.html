@@ -9,15 +9,33 @@
   <form class="withdraw-form" method="post">
     <div class="withdraw-amount-label"><label for="withdraw-amount">Amount to withdraw</label><span>Max: UGX {{ "{:,.0f}".format(user.balance) }}</span></div>
     <div class="withdraw-input-wrap"><span>UGX</span><input id="withdraw-amount" name="amount" type="number" min="10000" max="{{ user.balance }}" step="1000" placeholder="Enter amount" required></div>
-    <div class="withdraw-note">{{ icon('shield',17) }} Withdrawal requests are checked against your available wallet balance before processing. Never share your PIN.</div>
+    <div class="withdraw-fee-box" aria-live="polite">
+      <div><span>Withdrawal amount</span><b id="fee-gross">UGX 0.00</b></div>
+      <div><span>Withdrawal fee (6%)</span><b id="fee-value">UGX 0.00</b></div>
+      <div class="withdraw-net"><span>You receive</span><b id="fee-net">UGX 0.00</b></div>
+    </div>
+    <div class="withdraw-note">{{ icon('shield',17) }} A 6% processing fee is deducted from the requested amount. The remaining 94% is the estimated payout after approval. Never share your PIN.</div>
     {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}{% endwith %}
     <button class="withdraw-submit" type="submit">Withdraw Funds</button>
-    <p class="withdraw-disclaimer">Minimum withdrawal request: UGX 10,000. Requests are subject to balance checks and payment verification.</p>
+    <p class="withdraw-disclaimer">Minimum withdrawal request: UGX 10,000. Requests are subject to balance checks and payment verification. The fee and payout are shown before you submit.</p>
   </form>
   <section class="withdraw-history"><div class="withdraw-history-head"><h2>Withdrawal History</h2><a href="{{ url_for('orders') }}">See all →</a></div>
     {% for t in txns %}<div class="withdraw-history-row"><span class="withdraw-history-icon">{{ icon('withdraw',22) }}</span><div class="withdraw-history-copy"><b>{{ t.kind }} · {{ t.status }}</b><small>{{ t.created_at }}</small></div><strong>−UGX {{ "{:,.0f}".format(t.amount) }}</strong></div>
     {% else %}<p class="withdraw-empty">No withdrawal requests yet.</p>{% endfor %}
   </section>
 </main>
+<script>
+(() => {
+  const input = document.getElementById('withdraw-amount');
+  const fmt = n => 'UGX ' + n.toLocaleString('en-UG', {minimumFractionDigits:2, maximumFractionDigits:2});
+  function updateFee(){
+    const amount = Math.max(0, Number(input.value || 0));
+    document.getElementById('fee-gross').textContent = fmt(amount);
+    document.getElementById('fee-value').textContent = fmt(amount * 0.06);
+    document.getElementById('fee-net').textContent = fmt(amount * 0.94);
+  }
+  input.addEventListener('input', updateFee); updateFee();
+})();
+</script>
 {% include "nav.html" %}
 {% endblock %}

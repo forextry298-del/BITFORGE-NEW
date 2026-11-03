@@ -92,6 +92,12 @@ def init_db():
             status TEXT NOT NULL DEFAULT 'Pending',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""")
+        tx_columns = {row[1] for row in conn.execute("PRAGMA table_info(transactions)")}
+        if "fee" not in tx_columns:
+            conn.execute("ALTER TABLE transactions ADD COLUMN fee REAL NOT NULL DEFAULT 0")
+        if "payout_amount" not in tx_columns:
+            conn.execute("ALTER TABLE transactions ADD COLUMN payout_amount REAL NOT NULL DEFAULT 0")
+
         conn.execute("""CREATE TABLE IF NOT EXISTS mine_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -362,10 +368,12 @@ def withdraw():
         elif amount > user["balance"]:
             flash("Insufficient available balance.")
         else:
-            db().execute("INSERT INTO transactions(user_id,kind,amount,status) VALUES(?,?,?,?)",
-                         (session["user_id"], "Withdrawal", amount, "Pending"))
+            fee = round(amount * 0.06, 2)
+            payout = round(amount - fee, 2)
+            db().execute("INSERT INTO transactions(user_id,kind,amount,status,fee,payout_amount) VALUES(?,?,?,?,?,?)",
+                         (session["user_id"], "Withdrawal", amount, "Pending", fee, payout))
             db().commit()
-            flash("Withdrawal request submitted for review.")
+            flash(f"Withdrawal request submitted. 6% fee: UGX {fee:,.2f}; estimated payout: UGX {payout:,.2f}.")
             return redirect(url_for("wallet"))
     return render_template("withdraw.html", user=user, txns=txns)
 
