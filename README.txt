@@ -1,29 +1,12 @@
-BITFORGE COMPLETE APPLICATION
+BITFORGE BITCOIN MINING UI UPDATE
 
-This ZIP contains the complete Flask application, not a homepage-only patch.
-The homepage is redesigned to match the supplied marketplace reference:
-- Search bar, hero carousel using the supplied real project photographs
-- Auto-advancing carousel (5 seconds), manual arrows and dots
-- Category navigation, featured project cards, wallet preview
-- Quick links, recent activity, profile/settings menu and dark mode
-- Bottom navigation
+This package updates the compact BitForge interface with the three supplied mining-facility images and Bitcoin mining presentation.
 
-Important scope:
-- The visual redesign is for the HOME PAGE only.
-- Registration, login, marketplace, wallet, deposit, withdrawal, orders and account remain separate functional pages.
-- Global CSS also makes forms and navigation responsive and properly spaced.
-- All amounts are displayed in UGX.
-- Registration and login use hashed passwords.
-- Deposit/withdrawal requests are saved as pending demo requests. This app does not connect to MTN/Airtel APIs or send/collect real money.
-- New users start with UGX 0. Do not treat illustrative project listings or pending requests as real investment products or confirmed payments.
+IMPORTANT LIVE-MINING STATUS
+This package is NOT connected to a mining pool or physical ASIC hardware. It therefore does not claim live hashrate, daily BTC earnings, or automatic mining payouts. Mining activation is intentionally blocked; the app checks the user's wallet balance but does not deduct funds or invent earnings.
 
-LOCAL RUN:
-  pip install -r requirements.txt
-  python app.py
+To enable genuine mining, the operator must supply and configure: (1) a real mining-pool account/API with worker-level accepted/rejected share data, (2) physical ASIC hardware or a verifiable hosted-mining contract, (3) a Bitcoin payout address, and (4) confirmed pool settlement records. Daily credits must be calculated from settled pool payouts, not fixed percentage promises.
 
-RENDER:
-  Build command: pip install -r requirements.txt
-  Start command: gunicorn --bind 0.0.0.0:$PORT app:app
+The displayed 4549-day term is only a configured display period and does not guarantee output.
 
-DATABASE:
-SQLite database file is created automatically. On Render, attach a persistent disk and configure a persistent database path before using real user data; the default service filesystem may be ephemeral.
+Deploy: install requirements.txt, configure SECRET_KEY and a persistent BITFORGE_DATA_DIR, then start with the existing Render start command. Back up the existing SQLite database before replacing deployed files.

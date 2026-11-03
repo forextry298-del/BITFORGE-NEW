@@ -17,9 +17,9 @@ if not os.path.exists(DB) and os.path.isfile(LEGACY_DB) and os.path.abspath(DB) 
 
 
 PRODUCTS = [
-    {"id": 1, "name": "BITCOIN MINER · SHA-256", "category": "SHA-256", "description": "Entry-level Bitcoin mining simulator", "minimum": 5000, "maximum": 100000, "daily_rate": 0.20, "daily_projection": "20% demo estimate", "duration": "4549 days", "risk": "High", "image": "solar_farm.jpg", "hashrate": "1.2 TH/s"},
-    {"id": 2, "name": "BITCOIN MINER · ASIC PRO", "category": "ASIC PRO", "description": "Advanced ASIC mining simulator", "minimum": 150000, "maximum": 1000000, "daily_rate": 0.34, "daily_projection": "34% demo estimate", "duration": "4549 days", "risk": "High", "image": "real_estate.jpg", "hashrate": "8.5 TH/s"},
-    {"id": 3, "name": "BITCOIN MINER · HYDRO MAX", "category": "HYDRO MAX", "description": "High-capacity Bitcoin mining simulator", "minimum": 2000000, "maximum": 5000000, "daily_rate": 0.476, "daily_projection": "47.6% demo estimate", "duration": "4549 days", "risk": "High", "image": "green_energy.jpg", "hashrate": "25 TH/s"},
+    {"id": 1, "name": "BITCOIN MINER · SHA-256", "category": "SHA-256", "description": "Bitcoin SHA-256 mining rig · pool connection required", "minimum": 5000, "maximum": 100000, "daily_projection": "Pool earnings only", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "mining_rig_robot.jpg", "hashrate": "Pool-reported only"},
+    {"id": 2, "name": "BITCOIN MINER · ASIC PRO", "category": "ASIC PRO", "description": "ASIC Bitcoin mining equipment · pool connection required", "minimum": 150000, "maximum": 1000000, "daily_projection": "Pool earnings only", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "bitcoin_mining_robot.jpg", "hashrate": "Pool-reported only"},
+    {"id": 3, "name": "BITCOIN MINER · HYDRO MAX", "category": "HYDRO MAX", "description": "High-capacity mining facility · pool connection required", "minimum": 2000000, "maximum": 5000000, "daily_projection": "Pool earnings only", "duration": "4549 days (configured term)", "risk": "Mining risk", "image": "industrial_mining_robot.jpg", "hashrate": "Pool-reported only"},
 ]
 
 def db():
@@ -216,15 +216,9 @@ def mine(product_id):
         shortfall = amount - balance
         flash(f"INSUFFICIENT BALANCE. Available: UGX {balance:,.0f}. You need UGX {shortfall:,.0f} more.")
         return redirect(url_for("market"))
-    # A sufficient balance is detected, but this demo only creates a pending
-    # request. No wallet debit or mining payout occurs without verified mining.
-    db().execute(
-        "INSERT INTO mine_requests(user_id, product_id, product_name, amount) VALUES(?,?,?,?)",
-        (session["user_id"], product["id"], product["name"], amount)
-    )
-    db().commit()
-    daily_demo = amount * product["daily_rate"]
-    flash(f"SUFFICIENT BALANCE DETECTED. Mining request submitted for review. Illustrative daily estimate: UGX {daily_demo:,.0f}. No funds were deducted and no Bitcoin earnings were credited.")
+    # Do not accept deposits or fabricate mining earnings. Activation is blocked
+    # until a real mining-pool API and verified payout wallet are configured.
+    flash("BALANCE CHECK PASSED, but mining is not connected to a verified pool yet. No funds were deducted and no earnings were credited.")
     return redirect(url_for("market"))
 
 @app.route("/wallet")

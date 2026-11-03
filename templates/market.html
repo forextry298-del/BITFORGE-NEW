@@ -4,7 +4,7 @@
 {% block body %}
 <header class="top mining-top"><a class="brand" href="{{ url_for('home') }}"><span class="logo">₿</span>BitForge Mining</a><a href="{{ url_for('account') }}" aria-label="Account menu">☰</a></header>
 <main class="wrap content market-page mining-page">
-  <section class="mining-hero"><div class="btc-mark">₿</div><div><span class="mining-kicker">BITFORGE HASH POWER</span><h1>Bitcoin Mining Rigs</h1><p>Choose a mining simulator and check your available wallet balance.</p></div></section>
+  <section class="mining-hero"><div class="btc-mark">₿</div><div><span class="mining-kicker">BITFORGE HASH POWER</span><h1>Bitcoin Mining Rigs</h1><p>Explore mining hardware. Live mining activation requires a verified pool connection.</p></div></section>
   {% with messages=get_flashed_messages() %}{% for m in messages %}<div class="flash mining-flash">{{ m }}</div>{% endfor %}{% endwith %}
   <section class="mining-balance"><div><small>AVAILABLE WALLET BALANCE</small><strong>UGX {{ "{:,.0f}".format(current_user_balance) }}</strong></div><a href="{{ url_for('wallet') }}">Wallet ↗</a></section>
   <div class="market-tools">
@@ -22,7 +22,7 @@
       <div class="market-product-info">
         <h2>{{ p.name }}</h2><p class="market-description">{{ p.description }}</p>
         <p>Activation range · <strong>UGX {{ "{:,.0f}".format(p.minimum) }}–{{ "{:,.0f}".format(p.maximum) }}</strong></p>
-        <p>Daily demo rate · <strong>{{ p.daily_projection }}</strong></p>
+        <p>Earnings · <strong>{{ p.daily_projection }}</strong></p>
         <p>Mining period · <strong>4549 days</strong></p>
         <p>Wallet check · <strong>Required before request</strong></p>
         <div class="market-product-bottom mining-product-bottom">
@@ -31,25 +31,14 @@
             <input id="mine-amount-{{ p.id }}" name="amount" type="number" min="{{ p.minimum }}" max="{{ p.maximum }}" step="1" placeholder="Enter UGX" required>
             <button type="submit">START MINING</button>
           </form>
-          <small class="daily-preview" id="daily-preview-{{ p.id }}">Daily demo estimate: UGX 0</small>
+          <small class="daily-preview" id="daily-preview-{{ p.id }}">Pool-reported earnings appear after connection</small>
         </div>
       </div>
     </article>
   {% else %}<p class="card muted">No mining rigs match this category.</p>{% endfor %}
   </section>
-  <section class="projection-notice mining-notice" id="mining-notice"><strong>Mining simulator and payout notice</strong><p>All displayed daily rates and hashrates are illustrative simulator values, not live Bitcoin mining measurements, promised returns, or guaranteed income. This app is not connected to a mining pool. A sufficient wallet balance only allows a request to be submitted for review; this demo does not deduct funds or automatically credit simulated earnings. Real BTC payouts require verified pool earnings, a confirmed payout transaction, and an auditable credit record. The 4549-day period is a displayed simulation term only.</p></section>
+  <section class="projection-notice mining-notice" id="mining-notice"><strong>Live mining connection status</strong><p>Mining hardware imagery is illustrative until physical equipment and a verified mining-pool account are connected. This release does not claim live hashrate, daily BTC earnings, or automatic payouts. Mining activation is deliberately blocked until a pool API, worker identity, payout address, and verified pool settlement records are configured. Wallet balance checks are performed, but no funds are deducted and no earnings are fabricated. The 4549-day term is a configured display period, not a guarantee of mining output.</p></section>
 </main>
-<script>
-for (const form of document.querySelectorAll('.mine-form')) {
-  const input = form.querySelector('input');
-  const preview = document.getElementById('daily-preview-' + input.id.split('-').pop());
-  const rate = Number(form.dataset.rate || 0);
-  const update = () => {
-    const amount = Number(input.value || 0);
-    preview.textContent = 'Daily demo estimate: UGX ' + Math.round(amount * rate).toLocaleString('en-US');
-  };
-  input.addEventListener('input', update);
-}
-</script>
+
 {% include "nav.html" %}
 {% endblock %}

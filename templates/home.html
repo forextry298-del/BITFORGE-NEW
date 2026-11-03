@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}BitForge Marketplace{% endblock %}
+{% block title %}BitForge Bitcoin Mining{% endblock %}
 {% from 'icons.html' import icon %}
 {% block body %}
 <header class="top home-top">
@@ -20,21 +20,21 @@
     <button type="submit">Search</button>
   </form>
 
-  <section class="hero-slider" aria-label="Featured BitForge projects">
+  <section class="hero-slider" aria-label="Featured Bitcoin mining facility">
     <article class="hero-slide active">
-      <img src="{{ url_for('static',filename='images/real_estate.jpg') }}" alt="Modern commercial office building">
+      <img src="{{ url_for('static',filename='images/mining_rig_robot.jpg') }}" alt="Modern commercial office building">
       <div class="hero-overlay"></div>
-      <div class="hero-text"><span class="hero-kicker">BITFORGE PROJECTS</span><h1>Build with confidence.</h1><p>Explore property and infrastructure project opportunities.</p><a href="{{ url_for('market') }}">Explore projects <span>→</span></a></div>
+      <div class="hero-text"><span class="hero-kicker">BITFORGE MINING FACILITY</span><h1>Bitcoin mining infrastructure.</h1><p>Explore the mining hardware environment and account tools.</p><a href="{{ url_for('market') }}">Explore mining <span>→</span></a></div>
     </article>
     <article class="hero-slide">
-      <img src="{{ url_for('static',filename='images/solar_farm.jpg') }}" alt="Solar farm in a sunny landscape">
+      <img src="{{ url_for('static',filename='images/bitcoin_mining_robot.jpg') }}" alt="Solar farm in a sunny landscape">
       <div class="hero-overlay"></div>
-      <div class="hero-text"><span class="hero-kicker">SOLAR ENERGY</span><h1>Power a brighter future.</h1><p>Discover clean-energy project information.</p><a href="{{ url_for('market',category='Solar') }}">Explore solar <span>→</span></a></div>
+      <div class="hero-text"><span class="hero-kicker">SHA-256 MINING</span><h1>Mining hardware and compute.</h1><p>View mining rigs and pool connection status.</p><a href="{{ url_for('market',category='Solar') }}">Explore rigs <span>→</span></a></div>
     </article>
     <article class="hero-slide">
-      <img src="{{ url_for('static',filename='images/green_energy.jpg') }}" alt="Wind turbines and renewable energy facility">
+      <img src="{{ url_for('static',filename='images/industrial_mining_robot.jpg') }}" alt="Wind turbines and renewable energy facility">
       <div class="hero-overlay"></div>
-      <div class="hero-text"><span class="hero-kicker">GREEN INFRASTRUCTURE</span><h1>Move towards tomorrow.</h1><p>Browse renewable-energy project listings.</p><a href="{{ url_for('market',category='Green Energy') }}">Explore energy <span>→</span></a></div>
+      <div class="hero-text"><span class="hero-kicker">MINING OPERATIONS</span><h1>Track verified mining activity.</h1><p>Earnings appear only after verified pool settlement.</p><a href="{{ url_for('market',category='Green Energy') }}">Explore mining <span>→</span></a></div>
     </article>
     <button class="slider-arrow slider-prev" type="button" aria-label="Previous slide">‹</button>
     <button class="slider-arrow slider-next" type="button" aria-label="Next slide">›</button>
@@ -55,7 +55,7 @@
   </nav>
 
   <section class="section-heading">
-    <div><h2>Featured projects</h2><p>Explore the projects listed on BitForge</p></div>
+    <div><h2>Mining rigs</h2><p>Explore available mining hardware</p></div>
     <a href="{{ url_for('market') }}">See all <span>→</span></a>
   </section>
 
@@ -76,7 +76,7 @@
   </section>
 
   <section class="wallet-preview">
-    <div class="wallet-title"><span>INVESTMENT WALLET</span><a href="{{ url_for('wallet') }}">Details →</a></div>
+    <div class="wallet-title"><span>MINING WALLET</span><a href="{{ url_for('wallet') }}">Details →</a></div>
     <p>Total Balance</p>
     <h2>UGX {{ "{:,.0f}".format(user.balance) }}</h2>
     <div class="wallet-actions"><a href="{{ url_for('deposit') }}">{{ icon("deposit",21) }}<span>Deposit</span></a><a href="{{ url_for('withdraw') }}">{{ icon("withdraw",21) }}<span>Withdraw</span></a></div>
@@ -98,7 +98,7 @@
       <p class="empty-activity">Your recent transactions will appear here.</p>
     {% endfor %}
   </section>
-  <p class="disclaimer">Project information is illustrative. Returns are not guaranteed. Deposit and withdrawal requests require review; this demo does not process mobile-money payments.</p>
+  <p class="disclaimer">Mining imagery is illustrative. Live Bitcoin mining requires connected hardware and a verified pool. Wallet credits are made only against confirmed transactions.</p>
 </main>
 {% include "nav.html" %}
 <script>
