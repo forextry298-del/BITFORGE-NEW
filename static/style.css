@@ -552,3 +552,28 @@ body{background:var(--page);color:var(--ink);font-size:15px}
 .auth-dark-panel .auth-submit{min-height:48px!important;border:1px solid #e7a12c!important;border-radius:13px!important;background:linear-gradient(110deg,#ffd16a 0%,#f5a623 48%,#df7c12 100%)!important;color:#21170a!important;font-size:15px!important;font-weight:900!important;letter-spacing:.2px!important;box-shadow:0 6px 15px #df941d38,inset 0 1px 0 #fff7d6!important;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}
 .auth-dark-panel .auth-submit:active{transform:translateY(1px) scale(.99);filter:brightness(.97)}
 .auth-dark-panel .auth-submit:focus-visible{outline:3px solid #f4bd55!important;outline-offset:3px}
+
+/* Account page: compact sizing to match Invite & Earn mobile layout */
+.account-clean{width:min(100% - 28px,440px)!important;max-width:440px!important;margin-left:auto!important;margin-right:auto!important;padding-top:10px!important;padding-bottom:92px!important}
+.account-clean .account-brand-robot{margin:0 0 8px!important;padding:6px 9px!important;min-height:48px!important;border-radius:13px!important}
+.account-clean .account-brand-logo{width:30px!important;height:30px!important}
+.account-clean .account-robot-image{width:49px!important;height:36px!important;border-radius:8px!important}
+.account-clean .account-facility-banner{height:86px!important;margin:0 0 10px!important;border-radius:12px!important}
+.account-clean .account-facility-banner img{object-fit:cover!important}
+.account-clean .account-facility-banner span{font-size:8px!important;padding:3px 6px!important;bottom:6px!important;left:7px!important}
+.account-clean .profile-card{padding:11px!important;border-radius:15px!important}
+.account-clean .profile-balance{padding:10px 11px!important;margin:0 0 8px!important;border-radius:11px!important}
+.account-clean .profile-balance>span{font-size:11px!important}
+.account-clean .profile-balance>strong{font-size:22px!important;line-height:1.2!important}
+.account-clean .profile-balance>small{font-size:9px!important;margin-top:4px!important}
+.account-clean .profile-actions{gap:7px!important}
+.account-clean .profile-actions a{min-height:39px!important;padding:8px 7px!important;border-radius:10px!important;font-size:12px!important;gap:5px!important}
+.account-clean .account-section-title{font-size:17px!important;margin:14px 2px 7px!important}
+.account-clean .account-menu-row{min-height:52px!important;padding:7px 9px!important;margin:7px 0!important;border-radius:12px!important;gap:8px!important;font-size:12px!important}
+.account-clean .account-menu-row>span:nth-child(2){font-size:12px!important}
+.account-clean .account-menu-icon{width:34px!important;height:34px!important;flex:0 0 34px!important;border-radius:9px!important}
+.account-clean .account-menu-icon svg{width:19px!important;height:19px!important}
+.account-clean .account-menu-row small{font-size:9px!important;line-height:1.3!important;margin-top:2px!important}
+.account-clean .account-menu-row em{font-size:9px!important;padding:4px 7px!important}
+.account-clean .account-menu-row>b{font-size:19px!important}
+@media(max-width:390px){.account-clean{width:calc(100% - 24px)!important;padding-left:0!important;padding-right:0!important}.account-clean .account-facility-banner{height:78px!important}.account-clean .profile-balance>strong{font-size:21px!important}}
