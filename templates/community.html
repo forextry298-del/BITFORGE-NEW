@@ -4,7 +4,7 @@
   <div class="chat-switch"><a href="{{ url_for('chats') }}">✉ Support chat</a><a class="selected" href="{{ url_for('community') }}">◎ Community</a></div>
   <section class="chat-panel"><div class="chat-panel-title"><span class="chat-symbol">◎</span><div><b>All members</b><small>Messages are visible to every signed-in member</small></div></div>
     <div class="chat-history community-history" id="community-history">
-      {% if messages %}{% for m in messages %}<div class="community-message"><div class="community-avatar">{{ (m.full_name or 'M')[:1]|upper }}</div><div class="community-message-body"><div class="community-meta"><b>{{ m.full_name }}</b><time>{{ m.created_at }}</time></div><p>{{ m.message }}</p></div></div>{% endfor %}{% else %}<div class="chat-empty"><span>◎</span><b>Welcome to the community</b><p>There are no messages yet. Start the conversation.</p></div>{% endif %}
+      {% if messages %}{% for m in messages %}<div class="community-message"><div class="community-avatar">{{ (m.phone or 'M')[:1]|upper }}</div><div class="community-message-body"><div class="community-meta"><b>{{ m.phone or 'Unknown number' }}</b><time>{{ m.created_at }}</time></div><p>{{ m.message }}</p></div></div>{% endfor %}{% else %}<div class="chat-empty"><span>◎</span><b>Welcome to the community</b><p>There are no messages yet. Start the conversation.</p></div>{% endif %}
     </div>
     <form class="chat-compose" method="post"><textarea name="message" rows="2" maxlength="1000" placeholder="Message all members…" required></textarea><button class="chat-send" type="submit" aria-label="Post message">➤</button></form>
   </section>

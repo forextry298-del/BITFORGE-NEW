@@ -419,7 +419,7 @@ def community():
                          (session["user_id"], message))
             db().commit()
             return redirect(url_for("community"))
-    messages = db().execute("""SELECT c.message,c.created_at,u.full_name
+    messages = db().execute("""SELECT c.message,c.created_at,u.full_name,u.phone
                               FROM community_messages c JOIN users u ON u.id=c.user_id
                               ORDER BY c.id DESC LIMIT 100""").fetchall()
     return render_template("community.html", messages=list(reversed(messages)))
