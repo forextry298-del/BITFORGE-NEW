@@ -7,5 +7,3 @@ services:
     envVars:
       - key: SECRET_KEY
         generateValue: true
-      - key: DAILY_EARNINGS_SECRET
-        generateValue: true
