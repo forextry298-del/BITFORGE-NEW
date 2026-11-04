@@ -7,6 +7,10 @@
     <img class="account-brand-logo" src="{{ url_for('static', filename='images/bitforge_robot_logo.webp') }}" alt="BitForge">
     <img class="account-robot-image" src="{{ url_for('static', filename='images/industrial_mining_robot.jpg') }}" alt="BitForge mining robot">
   </section>
+  <section class="account-facility-banner" aria-label="BitForge mining operations">
+    <img src="{{ url_for('static', filename='images/bitforge_mining_operations.jpg') }}" alt="BitForge Bitcoin mining operations">
+    <span>BITFORGE · MINING OPERATIONS</span>
+  </section>
   <section class="profile-card">
     <div class="profile-balance"><span>Wallet Balance</span><strong>UGX {{ "{:,.0f}".format(user.balance) }}</strong><small>{{ icon('wallet',15) }} Available balance · Updated from your wallet</small></div>
     <div class="profile-actions"><a class="profile-deposit" href="{{ url_for('deposit') }}">{{ icon('deposit',20) }} Deposit</a><a class="profile-withdraw" href="{{ url_for('withdraw') }}">{{ icon('withdraw',20) }} Withdrawal</a></div>

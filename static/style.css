@@ -524,3 +524,31 @@ body{background:var(--page);color:var(--ink);font-size:15px}
 .home-mining-facility img{display:block;width:100%;height:auto;max-height:300px;object-fit:cover}
 .home-mining-facility small{display:block;padding:8px 11px;color:#b8c9e4;font-size:10px;letter-spacing:1.1px;font-weight:700}
 @media(max-width:480px){.home-mining-facility{margin:12px 0 20px;border-radius:13px}.home-mining-facility img{max-height:210px}.home-mining-facility small{font-size:9px;padding:7px 9px}}
+
+
+/* Compact account page with mining facility image */
+.account-clean{max-width:720px;padding-top:10px;padding-bottom:88px}
+.account-clean .account-brand-robot{margin-bottom:8px;padding:7px 9px;border-radius:13px}
+.account-clean .account-brand-logo{width:34px;height:34px}
+.account-clean .account-robot-image{width:58px;height:42px}
+.account-facility-banner{position:relative;margin:0 0 11px;border-radius:13px;overflow:hidden;height:104px;background:#14243a}
+.account-facility-banner img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 53%}
+.account-facility-banner span{position:absolute;left:9px;bottom:8px;padding:4px 7px;border-radius:6px;background:#071629c9;color:#fff;font-size:9px;font-weight:800;letter-spacing:.7px}
+.account-clean .profile-card{padding:13px;border-radius:17px}
+.account-clean .profile-balance{padding:13px;margin-bottom:9px;border-radius:13px}
+.account-clean .profile-balance>span{font-size:12px}
+.account-clean .profile-balance>strong{font-size:25px}
+.account-clean .profile-balance small{font-size:10px}
+.account-clean .profile-actions{gap:9px}
+.account-clean .profile-actions a{min-height:43px;padding:9px 10px;border-radius:12px;font-size:13px}
+.account-clean .account-section-title{font-size:19px;margin:17px 2px 9px}
+.account-clean .account-menu-row{min-height:62px;padding:9px 11px;margin-bottom:8px;border-radius:14px;font-size:13px;gap:9px}
+.account-clean .account-menu-icon{width:39px;height:39px;flex:0 0 39px;border-radius:11px}
+.account-clean .account-menu-row small{font-size:10px;margin-top:2px}
+.account-clean .account-menu-row em{font-size:10px;padding:5px 8px}
+@media(max-width:390px){.account-clean{padding-left:12px;padding-right:12px}.account-facility-banner{height:88px}.account-clean .profile-balance>strong{font-size:23px}.account-clean .account-menu-row{min-height:57px}}
+
+/* Polished gold BitForge sign-in button */
+.auth-dark-panel .auth-submit{min-height:48px!important;border:1px solid #e7a12c!important;border-radius:13px!important;background:linear-gradient(110deg,#ffd16a 0%,#f5a623 48%,#df7c12 100%)!important;color:#21170a!important;font-size:15px!important;font-weight:900!important;letter-spacing:.2px!important;box-shadow:0 6px 15px #df941d38,inset 0 1px 0 #fff7d6!important;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}
+.auth-dark-panel .auth-submit:active{transform:translateY(1px) scale(.99);filter:brightness(.97)}
+.auth-dark-panel .auth-submit:focus-visible{outline:3px solid #f4bd55!important;outline-offset:3px}
