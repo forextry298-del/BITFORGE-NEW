@@ -321,6 +321,11 @@ def home():
     is_admin = bool(user and user["phone"] == admin_phone)
     return render_template("home.html", user=user, txns=txns, products=PRODUCTS, is_admin=is_admin)
 
+@app.route("/risk-terms")
+@login_required
+def risk_terms():
+    return render_template("risk_terms.html")
+
 @app.route("/market")
 @login_required
 def market():

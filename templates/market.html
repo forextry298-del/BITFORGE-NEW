@@ -10,7 +10,7 @@
   <div class="market-tools">
     <a class="market-tool" href="{{ url_for('market') }}"><span class="tool-btc">₿</span><b>Mining Rigs</b></a>
     <a class="market-tool" href="{{ url_for('wallet') }}">{{ icon('briefcase',27) }}<b>My Requests</b></a>
-    <a class="market-tool" href="#mining-terms">{{ icon('shield',27) }}<b>Risk & Terms</b></a>
+    <a class="market-tool" href="{{ url_for('risk_terms') }}">{{ icon('shield',27) }}<b>Risk & Terms</b></a>
   </div>
   <section class="market-products">
   {% for p in products %}
