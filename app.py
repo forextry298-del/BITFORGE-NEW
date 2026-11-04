@@ -220,8 +220,21 @@ def process_daily_earnings():
 def login_required(fn):
     @wraps(fn)
     def wrapped(*args, **kwargs):
-        if not session.get("user_id"):
-            return redirect(url_for("register"))
+        user_id = session.get("user_id")
+
+        if not user_id:
+            return redirect(url_for("login"))
+
+        user = db().execute(
+            "SELECT id FROM users WHERE id=?",
+            (user_id,)
+        ).fetchone()
+
+        if user is None:
+            session.clear()
+            flash("Your session expired. Please log in again.")
+            return redirect(url_for("login"))
+
         return fn(*args, **kwargs)
     return wrapped
 
