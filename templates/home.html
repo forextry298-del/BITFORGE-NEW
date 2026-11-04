@@ -29,7 +29,7 @@
   <section class="dashboard-wallet">
     <div class="dashboard-wallet-top"><span><b>₿</b> MINING WALLET</span><a href="{{ url_for('wallet') }}">Details →</a></div>
     <small>Available balance</small>
-    <strong>UGX {{ "{:,.0f}".format(user.balance) }}</strong>
+    <strong>UGX {{ "{:,.0f}".format(user["balance"]|default(0, true)) }}</strong>
     <div class="dashboard-wallet-actions"><a href="{{ url_for('deposit') }}">↓ <span>Deposit</span></a><a href="{{ url_for('withdraw') }}">↑ <span>Withdraw</span></a></div>
   </section>
 
