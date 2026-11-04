@@ -4,11 +4,10 @@
 {% block body %}
 <main class="wrap content invite-page">
   <a class="invite-back" href="{{ url_for('account') }}">← Account</a>
-
   <section class="invite-hero">
     <span class="invite-kicker">BITFORGE REFERRALS</span>
     <h1>Invite &amp; Earn</h1>
-    <p>Share your invite link. When a referred member makes a deposit that is verified by the admin, you receive a Level 1 commission.</p>
+    <p>Share your link and earn commission on verified referral deposits.</p>
     <div class="invite-rate"><strong>25%</strong><span>LEVEL 1 COMMISSION</span></div>
   </section>
 
@@ -27,74 +26,68 @@
   <section class="card invite-rules">
     <h3>How it works</h3>
     <ol>
-      <li>Share your personal invitation link.</li>
-      <li>Your friend registers using that link.</li>
-      <li>After their deposit is received and verified, 25% of that deposit is credited to your wallet balance.</li>
+      <li>Share your invitation link.</li>
+      <li>Your friend registers using your link.</li>
+      <li>Earn 25% after their deposit is verified.</li>
     </ol>
-    <p>Only one Level 1 referral tier applies. Pending or rejected deposits do not earn commission.</p>
+    <p>Pending or rejected deposits do not earn commission.</p>
   </section>
 
   <section class="invite-machines">
-    <div class="invite-machines-heading">
-      <span class="invite-kicker">BITFORGE MACHINE COLLECTION</span>
-      <h2>Referral milestones</h2>
-      <p>These machines are displayed as referral milestone cards. Meeting a referral target does not itself create mining revenue or guarantee a cash payout.</p>
-    </div>
+    <h2>BitForge Machines</h2>
 
     <article class="card invite-machine">
-      <img src="{{ url_for('static', filename='images/bitforge-mini-generator.jpg') }}" alt="BitForge portable mini generator" loading="lazy">
+      <img src="{{ url_for('static', filename='images/bitforge-mini-generator.jpg') }}" alt="BitForge Mini Generator" loading="lazy">
       <div class="invite-machine-body">
-        <span class="invite-machine-tag">MILESTONE 01</span>
-        <h3>BitForge Mini Generator</h3>
-        <p class="invite-machine-target"><strong>3</strong> verified referrals required</p>
+        <h3>Machine 1</h3>
+        <div class="invite-machine-row"><span>Daily estimate</span><strong>UGX 5,000</strong></div>
+        <div class="invite-machine-row"><span>Invites needed</span><strong>3</strong></div>
+        <div class="invite-machine-row"><span>Period</span><strong>6 days</strong></div>
         <div class="invite-progress"><span style="width: {{ [invite_count * 100 / 3, 100] | min }}%"></span></div>
-        <p class="invite-progress-label">{{ [invite_count, 3] | min }} of 3 referrals</p>
-        <p class="invite-machine-note">Free milestone card · 6-day display period after eligibility is verified</p>
+        <small>{{ [invite_count, 3] | min }}/3 invites</small>
       </div>
     </article>
 
     <article class="card invite-machine">
-      <img src="{{ url_for('static', filename='images/bitforge-operations.jpg') }}" alt="BitForge mining operations control room" loading="lazy">
+      <img src="{{ url_for('static', filename='images/bitforge-operations.jpg') }}" alt="BitForge Operations" loading="lazy">
       <div class="invite-machine-body">
-        <span class="invite-machine-tag">MILESTONE 02</span>
-        <h3>BitForge Operations Unit</h3>
-        <p class="invite-machine-target"><strong>15</strong> verified referrals required</p>
+        <h3>Machine 2</h3>
+        <div class="invite-machine-row"><span>Daily estimate</span><strong>UGX 19,000</strong></div>
+        <div class="invite-machine-row"><span>Invites needed</span><strong>15</strong></div>
+        <div class="invite-machine-row"><span>Period</span><strong>6 days</strong></div>
         <div class="invite-progress"><span style="width: {{ [invite_count * 100 / 15, 100] | min }}%"></span></div>
-        <p class="invite-progress-label">{{ [invite_count, 15] | min }} of 15 referrals</p>
-        <p class="invite-machine-note">Free milestone card · 6-day display period after eligibility is verified</p>
+        <small>{{ [invite_count, 15] | min }}/15 invites</small>
       </div>
     </article>
 
     <article class="card invite-machine">
-      <img src="{{ url_for('static', filename='images/bitforge-mining-farm.jpg') }}" alt="BitForge industrial Bitcoin mining facility" loading="lazy">
+      <img src="{{ url_for('static', filename='images/bitforge-mining-farm.jpg') }}" alt="BitForge Mining Facility" loading="lazy">
       <div class="invite-machine-body">
-        <span class="invite-machine-tag">MILESTONE 03</span>
-        <h3>BitForge Mining Facility</h3>
-        <p class="invite-machine-target"><strong>30</strong> verified referrals required</p>
+        <h3>Machine 3</h3>
+        <div class="invite-machine-row"><span>Daily estimate</span><strong>UGX 58,000</strong></div>
+        <div class="invite-machine-row"><span>Invites needed</span><strong>30</strong></div>
+        <div class="invite-machine-row"><span>Period</span><strong>6 days</strong></div>
         <div class="invite-progress"><span style="width: {{ [invite_count * 100 / 30, 100] | min }}%"></span></div>
-        <p class="invite-progress-label">{{ [invite_count, 30] | min }} of 30 referrals</p>
-        <p class="invite-machine-note">Free milestone card · 6-day display period after eligibility is verified</p>
+        <small>{{ [invite_count, 30] | min }}/30 invites</small>
       </div>
     </article>
+    <p class="invite-estimate-note">Daily figures are estimates, not guaranteed or automatic payments.</p>
   </section>
 </main>
 
 <style>
-.invite-machines{margin:24px 0 110px}
-.invite-machines-heading{margin:0 0 16px}
-.invite-machines-heading h2{margin:7px 0}
-.invite-machines-heading p{color:var(--muted,#78818e);line-height:1.55}
-.invite-machine{overflow:hidden;margin:16px 0;border-radius:22px}
-.invite-machine>img{display:block;width:100%;height:210px;object-fit:cover}
-.invite-machine-body{padding:18px}
-.invite-machine-tag{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#1689d5}
-.invite-machine-body h3{margin:8px 0 12px}
-.invite-machine-target{margin:0 0 10px}
-.invite-machine-target strong{font-size:25px}
-.invite-progress{height:10px;background:#e9edf2;border-radius:99px;overflow:hidden}
+.invite-machines{margin:22px 0 100px}
+.invite-machines>h2{font-size:21px;margin:0 0 12px}
+.invite-machine{overflow:hidden;margin:12px 0;border-radius:17px}
+.invite-machine>img{display:block;width:100%;height:155px;object-fit:cover}
+.invite-machine-body{padding:13px 15px}
+.invite-machine-body h3{font-size:17px;margin:0 0 9px}
+.invite-machine-row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:4px 0}
+.invite-machine-row strong{font-size:13px}
+.invite-progress{height:7px;background:#e9edf2;border-radius:99px;overflow:hidden;margin-top:8px}
 .invite-progress span{display:block;height:100%;background:linear-gradient(90deg,#159bdc,#f0a323);border-radius:99px}
-.invite-progress-label,.invite-machine-note{font-size:13px;color:var(--muted,#78818e)}
-.invite-machine-note{line-height:1.5;margin-bottom:0}
+.invite-machine-body>small{font-size:11px;color:var(--muted,#78818e)}
+.invite-estimate-note{font-size:11px;color:var(--muted,#78818e);margin:8px 2px}
 </style>
 {% include "nav.html" %}
 {% endblock %}
